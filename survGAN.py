@@ -154,7 +154,7 @@ class LocalSurvivalFunctionTTE:
 @dataclass
 class Config:
     # ---- Data ----
-    input_csv: str = "rotterdam_2232_survival.csv"
+    input_csv: str = "simulated_data.csv"
     target_column: str = "status"          # event indicator (0/1)
     time_column: str = "time"              # time-to-event
 
@@ -198,7 +198,7 @@ class Config:
 
     # ---- Generation ----
     synthetic_count: int = 2000
-    output_csv: str = "synthetic_survival_data_rotterdam_v2.csv"
+    output_csv: str = "synthetic_survival_data.csv"
 
     # ---- System ----
     seed: int = 42
