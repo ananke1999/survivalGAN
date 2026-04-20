@@ -1,29 +1,3 @@
-#!/usr/bin/env python3
-"""
-Standalone SurvivalGAN — Decoupled from synthcity
-===================================================
-A single-file implementation of the SurvivalGAN pipeline, extracted and
-simplified from the synthcity package so you can freely modify the GAN
-architecture (activations, MLP depth/width, residual connections, etc.)
-without touching the package internals.
-
-Synthcity is used ONLY for DeepHit survival model (survival_analysis).
-The TTE regression wrapper is now fully local, fixing two bugs from
-synthcity's SurvivalFunctionTimeToEvent:
-  1. dtype=int on time_horizons (collapsed float times to ints)
-  2. "depth" XGBoost param (invalid, silently ignored → default used)
-
-HOW TO EXPERIMENT WITH ARCHITECTURE:
-    Search for ">>> ARCHITECTURE" in this file. Those are the main modification
-    points for the generator/discriminator networks.
-
-Requirements:
-    pip install torch numpy pandas scikit-learn xgboost synthcity
-
-Usage:
-    python standalone_survival_gan.py [input.csv] [output.csv]
-"""
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -46,10 +20,7 @@ from tqdm import tqdm
 from xgboost import XGBClassifier
 
 # --------------------------------------------------------------------------- #
-#  TTE (time-to-event) model — FULLY LOCAL, no synthcity dependency           #
-#  Fixes two bugs from synthcity's SurvivalFunctionTimeToEvent:               #
-#    1. dtype=int on time_horizons collapsed float times to duplicated ints    #
-#    2. "depth" param (invalid) → "max_depth" (correct XGBoost param)         #
+#  TTE (time-to-event) model
 # --------------------------------------------------------------------------- #
 from synthcity.plugins.core.models.survival_analysis import (
     get_model_template as get_surv_model_template,
@@ -58,7 +29,6 @@ from xgboost import XGBRegressor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
-
 
 # =========================================================================== #
 #  LOCAL TTE MODEL — replaces synthcity's buggy SurvivalFunctionTimeToEvent   #
@@ -69,27 +39,33 @@ class LocalSurvivalFunctionTTE:
     Two-stage time-to-event model:
       Stage 1: DeepHit learns S(t|X) survival function
       Stage 2: XGBRegressor predicts log(T) from [X, S(t|X), E]
-
-    Bug fixes vs synthcity:
-      - time_horizons: removed dtype=int (was collapsing float times)
-      - XGBoost: "depth" → "max_depth" (was silently ignored)
-      - Added residual noise option to restore tail variance
     """
 
     def __init__(self, device: Any = "cpu", time_points: int = 100,
                  n_estimators: int = 500, max_depth: int = 6,
-                 add_residual_noise: bool = True):
+                 add_residual_noise: bool = False,
+                 noise_scale: float = 0.5,
+                 clamp_margin: float = 0.05):
+
         self.device = device
         self.time_points = time_points
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.add_residual_noise = add_residual_noise
+        self.noise_scale = noise_scale
+        self.clamp_margin = clamp_margin
 
         # DeepHit from synthcity's survival_analysis (not time_to_event)
         self.surv_model = get_surv_model_template("deephit")(device=device)
         self.tte_regressor = None
         self.time_horizons = None
         self._residual_std = 0.0
+        # Training log-time bounds. Used to clamp predictions so OOD synthetic
+        # covariates can't produce times in the millions or tiny fractions.
+        self._Tlog_min = None
+        self._Tlog_max = None
+        self._T_min = None
+        self._T_max = None
 
     def fit(self, X: pd.DataFrame, T: pd.Series, Y: pd.Series) -> "LocalSurvivalFunctionTTE":
         # Stage 1: fit DeepHit
@@ -107,7 +83,10 @@ class LocalSurvivalFunctionTTE:
         data[surv_fn.columns] = surv_fn
         data["_event_indicator"] = Y
 
-        Tlog = np.log(T + 1e-8)
+        # Guard against T <= 0 in training data. log(0 + 1e-8) = -18.42 which
+        # poisons the regression target.
+        T_pos = T.clip(lower=1e-3)
+        Tlog = np.log(T_pos)
 
         # FIX 2: "max_depth" not "depth"
         xgb_params = {
@@ -123,12 +102,32 @@ class LocalSurvivalFunctionTTE:
         # Store residual std for optional noise injection at predict time
         pred_log = self.tte_regressor.predict(data)
         self._residual_std = float(np.std(Tlog.values - pred_log))
-        log.info(f"TTE regressor residual std (log scale): {self._residual_std:.4f}")
+
+        # Store training log-time bounds for clamping at predict time.
+        self._Tlog_min = float(Tlog.min())
+        self._Tlog_max = float(Tlog.max())
+        self._T_min = float(T_pos.min())
+        self._T_max = float(T_pos.max())
+
+        log.info(
+            f"TTE fit: T=[{self._T_min:.3f}, {self._T_max:.3f}]  "
+            f"logT=[{self._Tlog_min:.3f}, {self._Tlog_max:.3f}]  "
+            f"residual_std(log)={self._residual_std:.4f}  "
+            f"noise={'on' if self.add_residual_noise else 'off'}"
+        )
 
         return self
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
         return self.predict_any(X, pd.Series([1] * len(X), index=X.index))
+
+    # ------------------------------------------------------------------ #
+    #  Backward-compat attribute access: older pickles don't have the new  #
+    #  fields. We fall back to sane defaults so unpickled models keep      #
+    #  working.                                                            #
+    # ------------------------------------------------------------------ #
+    def _get(self, name: str, default: Any) -> Any:
+        return getattr(self, name, default) if name in self.__dict__ else default
 
     def predict_any(self, X: pd.DataFrame, E: pd.Series) -> pd.Series:
         surv_fn = self.surv_model.predict(X, time_horizons=self.time_horizons)
@@ -138,12 +137,64 @@ class LocalSurvivalFunctionTTE:
         data[surv_fn.columns] = surv_fn
         data["_event_indicator"] = E
 
-        pred_log = self.tte_regressor.predict(data)
+        pred_log = np.asarray(self.tte_regressor.predict(data), dtype=float)
 
-        if self.add_residual_noise and self._residual_std > 0:
-            pred_log = pred_log + np.random.normal(0, self._residual_std, size=len(pred_log))
+        # Resolve backward-compat state for old pickles.
+        add_noise = self._get("add_residual_noise", False)
+        noise_scale = self._get("noise_scale", 0.5)
+        clamp_margin = self._get("clamp_margin", 0.05)
+        Tlog_min = self._get("_Tlog_min", None)
+        Tlog_max = self._get("_Tlog_max", None)
 
-        return pd.Series(np.exp(pred_log), index=X.index)
+        if add_noise and self._residual_std > 0:
+            pred_log = pred_log + np.random.normal(
+                0, self._residual_std * noise_scale, size=len(pred_log)
+            )
+
+        if Tlog_min is not None and Tlog_max is not None:
+            span = max(Tlog_max - Tlog_min, 1e-6)
+            lo = Tlog_min - clamp_margin * span
+            hi = Tlog_max + clamp_margin * span
+            pre_clip_low = int((pred_log < lo).sum())
+            pre_clip_high = int((pred_log > hi).sum())
+            pred_log = np.clip(pred_log, lo, hi)
+            if pre_clip_low + pre_clip_high > 0:
+                log.info(
+                    f"TTE predict: clamped {pre_clip_low} below / "
+                    f"{pre_clip_high} above log-T range "
+                    f"[{lo:.3f}, {hi:.3f}] (of {len(pred_log)} total)"
+                )
+
+        out = np.exp(pred_log)
+        # Final check: exp of a clamped value should already be in range,
+        # but keep it as an explicit guard in case of NaN/inf or extreme edge.
+        if self._T_min is not None and self._T_max is not None:
+            out = np.clip(out, self._T_min * 0.5, self._T_max * 2.0)
+
+        return pd.Series(out, index=X.index)
+
+
+def retrofit_tte_bounds(tte: "LocalSurvivalFunctionTTE",
+                        T_train: pd.Series,
+                        add_residual_noise: bool = False,
+                        noise_scale: float = 0.5,
+                        clamp_margin: float = 0.05) -> "LocalSurvivalFunctionTTE":
+    ""
+    T_pos = T_train.clip(lower=1e-3)
+    Tlog = np.log(T_pos)
+    tte._Tlog_min = float(Tlog.min())
+    tte._Tlog_max = float(Tlog.max())
+    tte._T_min = float(T_pos.min())
+    tte._T_max = float(T_pos.max())
+    tte.add_residual_noise = add_residual_noise
+    tte.noise_scale = noise_scale
+    tte.clamp_margin = clamp_margin
+    log.info(
+        f"retrofit_tte_bounds: T=[{tte._T_min:.3f}, {tte._T_max:.3f}]  "
+        f"logT=[{tte._Tlog_min:.3f}, {tte._Tlog_max:.3f}]  "
+        f"noise={'on' if tte.add_residual_noise else 'off'}"
+    )
+    return tte
 
 
 # =========================================================================== #
@@ -154,7 +205,7 @@ class LocalSurvivalFunctionTTE:
 @dataclass
 class Config:
     # ---- Data ----
-    input_csv: str = "simulated_data.csv"
+    input_csv: str = "rotterdam_2232_survival.csv"
     target_column: str = "status"          # event indicator (0/1)
     time_column: str = "time"              # time-to-event
 
@@ -198,7 +249,7 @@ class Config:
 
     # ---- Generation ----
     synthetic_count: int = 2000
-    output_csv: str = "synthetic_survival_data.csv"
+    output_csv: str = "synthetic_survival_data_rotterdam_v2.csv"
 
     # ---- System ----
     seed: int = 42
@@ -282,13 +333,7 @@ class MultiActivationHead(nn.Module):
 
 # =========================================================================== #
 #  SECTION 4 — MLP (Generator / Discriminator backbone)                        #
-#  >>> ARCHITECTURE — this is the MAIN place to change the network.            #
-#                                                                              #
-#  Ideas to try:                                                               #
-#    • Swap LinearLayer for a custom block (e.g. with LayerNorm, SiLU, etc.)   #
-#    • Add spectral normalization to discriminator layers                       #
-#    • Replace the MLP entirely with a deeper ResNet                            #
-#    • Add attention layers between MLP blocks                                  #
+#
 # =========================================================================== #
 
 class LinearLayer(nn.Module):
@@ -922,11 +967,20 @@ class TabularEncoder:
             st += dim
 
         out = pd.DataFrame(np.column_stack(recovered), columns=names, index=data.index)
-        # Restore original dtypes where possible
+        # Restore original dtypes where possible.
+        # For integer columns, ROUND before casting — pandas/numpy `astype(int)`
+        # truncates toward zero, so without rounding a GMM-generated 2.6 becomes
+        # 2 (should be 3) and 17.7 becomes 17 (should be 18). Rounding preserves
+        # the intended value and composes cleanly with the clip-to-bounds step
+        # applied in train_survGAN_aws.py after generation.
         for col in out.columns:
             if col in self._column_raw_dtypes.index:
+                tgt = self._column_raw_dtypes[col]
                 try:
-                    out[col] = out[col].astype(self._column_raw_dtypes[col])
+                    if np.issubdtype(tgt, np.integer):
+                        out[col] = out[col].round().astype(tgt)
+                    else:
+                        out[col] = out[col].astype(tgt)
                 except (ValueError, TypeError):
                     pass
         return out
@@ -1245,7 +1299,7 @@ class SurvivalPipeline:
 
         # ---- 1. Train TTE uncensoring model (synthcity) ----
         if self.tte_model is not None:
-            log.info("Training TTE uncensoring model (synthcity)...")
+            log.info("Training TTE model...")
             self.tte_model.fit(Xcov, T, E)
 
         # ---- 2. Build sampling labels for imbalanced sampler ----
@@ -1388,7 +1442,7 @@ def setup_device(preference: str) -> str:
     if use_cuda:
         torch.backends.cudnn.benchmark = True
         name = torch.cuda.get_device_name(0)
-        mem = torch.cuda.get_device_properties(0).total_mem / 1e9
+        mem = torch.cuda.get_device_properties(0).total_memory / 1e9
         log.info(f"GPU: {name} ({mem:.1f} GB)")
         return "cuda"
     log.info("Using CPU")
