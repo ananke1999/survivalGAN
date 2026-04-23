@@ -98,10 +98,10 @@ def parse_args() -> argparse.Namespace:
                         "to disable and fall back to the built-in default map.")
 
     # Training
-    p.add_argument("--n-iter", type=int, default=5000)
-    p.add_argument("--batch-size", type=int, default=512)
+    p.add_argument("--n-iter", type=int, default=3000)
+    p.add_argument("--batch-size", type=int, default=256)
     p.add_argument("--synthetic-count", type=int, default=None)
-    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--seed", type=int, default=99)
     p.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
 
     # Target columns
@@ -125,7 +125,7 @@ def parse_args() -> argparse.Namespace:
                    action="store_false")
     p.add_argument("--precision-unique-threshold", type=int, default=1000)
 
-    # Post-generation physical constraints      (NEW)
+    # Post-generation physical constraints
     p.add_argument("--enforce-constraints", action="store_true", default=True,
                    help="After generation, clip to column bounds and cast "
                         "integer columns to int (default ON). Uses "
@@ -211,16 +211,9 @@ def match_real_precision(real_df: pd.DataFrame,
 
 
 # =========================================================================== #
-#  NEW — physical constraint enforcement                                       #
+#  NEW                                  #
 # =========================================================================== #
 
-# Default constraint map. Used when no metadata JSON is provided, or for
-# columns that appear in the data but not in the JSON. Edit here if you add
-# new columns upstream.
-#
-# Each entry is (dtype, bounds) where
-#   dtype  ∈ {"int", "float"}
-#   bounds = (lo, hi), either endpoint may be None to indicate unbounded.
 DEFAULT_CONSTRAINT_MAP: Dict[str, Dict[str, Any]] = {
     "Age at Diagnosis":                   {"dtype": "int",   "bounds": (0, 120)},
     "Mutation Count":                     {"dtype": "int",   "bounds": (0, None)},

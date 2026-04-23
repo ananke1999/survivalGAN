@@ -71,7 +71,6 @@ class LocalSurvivalFunctionTTE:
         # Stage 1: fit DeepHit
         self.surv_model.fit(X, T, Y)
 
-        # FIX 1: no dtype=int — keep float time horizons
         self.time_horizons = np.linspace(
             T.min(), T.max(), self.time_points
         ).tolist()
@@ -88,7 +87,6 @@ class LocalSurvivalFunctionTTE:
         T_pos = T.clip(lower=1e-3)
         Tlog = np.log(T_pos)
 
-        # FIX 2: "max_depth" not "depth"
         xgb_params = {
             "n_jobs": 2,
             "n_estimators": self.n_estimators,
@@ -214,7 +212,7 @@ class Config:
     batch_size: int = 256
     generator_n_layers_hidden: int = 2  #3
     generator_n_units_hidden: int = 128 #256
-    generator_nonlin: str = "relu"       # try: relu, elu, selu, tanh, gelu, silu
+    generator_nonlin: str = "gelu"       # try: relu, elu, selu, tanh, gelu, silu
     generator_dropout: float = 0.0
     generator_residual: bool = True            # flip to False for plain MLP
     generator_batch_norm: bool = False
@@ -223,13 +221,13 @@ class Config:
     generator_opt_betas: tuple = (0.5, 0.999)
 
     discriminator_n_layers_hidden: int = 3
-    discriminator_n_units_hidden: int = 128 #256
+    discriminator_n_units_hidden: int = 256 #256
     discriminator_nonlin: str = "leaky_relu"
     discriminator_n_iter: int = 1  #5
     discriminator_dropout: float = 0.1
     discriminator_batch_norm: bool = False
     discriminator_lr: float = 1e-3
-    discriminator_weight_decay: float = 1e-3 #1e-3
+    discriminator_weight_decay: float = 1e-5
     discriminator_opt_betas: tuple = (0.5, 0.999)
 
     # ---- GAN training ----
@@ -243,7 +241,7 @@ class Config:
     # ---- Survival pipeline ----
     tte_strategy: str =  "survival_function"    # "survival_function" or "uncensoring"
     uncensoring_model: str = "survival_function_regression"
-    censoring_strategy: str = "random"         # "random" or "covariate_dependent"
+    censoring_strategy: str = "covariate_dependent"         # "random" or "covariate_dependent"
     use_survival_conditional: bool = True
     sampling_strategy: str = "imbalanced_time_censoring"  # none, imbalanced_censoring, imbalanced_time_censoring
 
@@ -1269,8 +1267,8 @@ class ImbalancedSampler(Sampler):
 class SurvivalPipeline:
     """
     Full SurvivalGAN pipeline:
-        1. Train a TTE uncensoring model (synthcity) on real data
-        2. Train a TabularGAN on covariates + T + E (with survival conditional)
+        1. Train a TTE model (synthcity) on real data
+        2. Train a DeepHIT on covariates + T + E (with survival conditional)
         3. Generate synthetic data:
            a. GAN produces synthetic covariates + E (+ placeholder T)
            b. TTE model predicts realistic T from synthetic covariates + E
