@@ -12,8 +12,8 @@ import pandas as pd
 from ctgan import CTGAN
 
 # ── 0. LOAD DATA ──────────────────────────────────────────────────────────────
-df_train = pd.read_csv("data sets/survival_gan_train.csv")
-df_test  = pd.read_csv("data sets/survival_gan_test.csv")
+df_train = pd.read_csv("data_sets/survival_gan_train.csv")
+df_test  = pd.read_csv("data_sets/survival_gan_test.csv")
 
 print(f"Train shape: {df_train.shape}")
 print(f"Test shape:  {df_test.shape}")
