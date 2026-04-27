@@ -247,8 +247,8 @@ def figure_dataset_positioning(msk_n: int, msk_features: int,
     leg.get_frame().set_linewidth(0.6)
 
     plt.tight_layout()
-    fig.savefig(out_dir / "01_dataset_positioning.svg")
-    fig.savefig(out_dir / "01_dataset_positioning.png", dpi=200)
+    fig.savefig(out_dir / "dataset_positioning_1.svg")
+    fig.savefig(out_dir / "dataset_positioning_1.png", dpi=200)
     plt.close(fig)
 
 
@@ -301,7 +301,7 @@ def figure_cancer_pareto(summary: pd.DataFrame, out_dir: Path) -> None:
         xaxis=dict(tickangle=-35),
         yaxis=dict(title="Number of patients", separatethousands=True),
     )
-    out_path = out_dir / "02_cancer_pareto.html"
+    out_path = out_dir / "cancer_pareto_2.html"
     fig.write_html(
         out_path,
         include_plotlyjs="cdn",   # ~3 KB file vs ~4 MB
@@ -444,8 +444,8 @@ def figure_pipeline_funnel(steps: list[dict], n_train: int, n_test: int,
                  fontsize=13, color=PALETTE["ink"], pad=4, loc="left",
                  x=0.02, y=0.95)
 
-    fig.savefig(out_dir / "03_pipeline_funnel.svg")
-    fig.savefig(out_dir / "03_pipeline_funnel.png", dpi=200)
+    fig.savefig(out_dir / "pipeline_funnel_3.svg")
+    fig.savefig(out_dir / "pipeline_funnel_1.png", dpi=200)
     plt.close(fig)
 
 
