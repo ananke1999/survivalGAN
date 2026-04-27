@@ -1,0 +1,150 @@
+<div class="page">
+  <header class="hero">
+    <h1>SurvivalGAN — Vanilla GAN Baseline</h1>
+    <p class="subtitle">
+      MLP Generator/Discriminator trained on the {{ dataset }} cohort to
+      synthesize survival-analysis-ready patient records.
+    </p>
+  </header>
+
+  <section class="section">
+    <h2>Model Architecture</h2>
+    <p class="lede">
+      The baseline is a plain GAN: the Generator maps Gaussian noise to a
+      patient feature vector in z-score space, and the Discriminator scores how
+      "real" each vector looks. After training, the Generator is sampled and
+      its outputs are inverse-transformed back to the original feature scale
+      with discrete columns clamped to valid bounds.
+    </p>
+
+    <div class="hyper-grid">
+      <div class="hyper">
+        <span class="hyper-label">Latent dimension</span>
+        <span class="hyper-value">{{ latentDim }}</span>
+      </div>
+      <div class="hyper">
+        <span class="hyper-label">Hidden width</span>
+        <span class="hyper-value">{{ hiddenWidth }}</span>
+      </div>
+      <div class="hyper">
+        <span class="hyper-label">Epochs</span>
+        <span class="hyper-value">{{ epochs }}</span>
+      </div>
+      <div class="hyper">
+        <span class="hyper-label">Batch size</span>
+        <span class="hyper-value">{{ batchSize }}</span>
+      </div>
+      <div class="hyper">
+        <span class="hyper-label">Optimizer</span>
+        <span class="hyper-value">{{ optimizer }}</span>
+      </div>
+      <div class="hyper">
+        <span class="hyper-label">Loss</span>
+        <span class="hyper-value">{{ loss }}</span>
+      </div>
+    </div>
+
+    <div class="arch-grid">
+      <article class="arch-card">
+        <h3>Generator</h3>
+        <ol class="arch-stack">
+          <li *ngFor="let layer of generatorLayers" class="arch-layer">
+            <span class="layer-name">{{ layer.name }}</span>
+            <span class="layer-detail">{{ layer.detail }}</span>
+          </li>
+        </ol>
+      </article>
+
+      <article class="arch-card">
+        <h3>Discriminator</h3>
+        <ol class="arch-stack">
+          <li *ngFor="let layer of discriminatorLayers" class="arch-layer">
+            <span class="layer-name">{{ layer.name }}</span>
+            <span class="layer-detail">{{ layer.detail }}</span>
+          </li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Generator GAN Model</h2>
+    <p class="lede">
+      The trained generator lives in <code>gan_checkpoint/</code>. Click
+      <em>Generate Synthetic Patient</em> to draw a fresh
+      <code>z ~ N(0, I)</code> of dimension {{ latentDim }}, push it through
+      the generator on the backend, inverse-scale the output and clamp the
+      discrete columns — exactly the pipeline used in <code>test_gan.py</code>.
+    </p>
+
+    <div class="generator-controls">
+      <button
+        type="button"
+        class="generate-btn"
+        (click)="generatePatient()"
+        [disabled]="generating"
+      >
+        {{ generating ? 'Generating…' : 'Generate Synthetic Patient' }}
+      </button>
+    </div>
+
+    <div class="generate-error" *ngIf="generateError">
+      {{ generateError }}
+    </div>
+
+    <div class="generated-result" *ngIf="generated">
+      <div class="preview-grid">
+        <div class="preview-card">
+          <h4>Latent vector z (first 8 of {{ latentDim }})</h4>
+          <code>[{{ formatLatent(generated.latent_preview) }}]</code>
+        </div>
+        <div class="preview-card">
+          <h4>Raw G(z) (z-score space, first 8)</h4>
+          <code>[{{ formatLatent(generated.raw_preview) }}]</code>
+        </div>
+      </div>
+
+      <table class="patient-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Decoded value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let column of generated.columns">
+            <td>{{ column }}</td>
+            <td>{{ formatValue(column, generated.values[column]) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Evaluation Results</h2>
+    <p class="lede">
+      Each figure below is produced by the evaluation pipeline in
+      <code>eval_results_gan/report/figures</code>. Together they assess the
+      GAN along three axes: statistical fidelity to the real distribution,
+      downstream utility for survival models, and consistency across patient
+      subgroups.
+    </p>
+
+    <div class="figure-list">
+      <article class="figure-card" *ngFor="let figure of figures">
+        <h3>{{ figure.title }}</h3>
+        <img
+          [src]="'assets/figures/' + figure.file"
+          [alt]="figure.title"
+          loading="lazy"
+        />
+        <p>{{ figure.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>SurvivalGAN · Vanilla baseline · GAN checkpoint in <code>gan_checkpoint/</code></span>
+  </footer>
+</div>

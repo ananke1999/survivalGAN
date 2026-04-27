@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(ng version *)",
+      "Bash(npx -y -p @angular/cli@14 ng new frontend --defaults --skip-git --routing=false --style=css --skip-install)",
+      "Bash(npm install *)",
+      "Bash(npx ng *)"
+    ]
+  }
+}

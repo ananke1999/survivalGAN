@@ -1,0 +1,6 @@
+flask>=2.3
+flask-cors>=4.0
+torch>=2.0
+joblib
+numpy
+scikit-learn
