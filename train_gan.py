@@ -5,14 +5,28 @@ Plain MLP Generator/Discriminator
 
 Dataset: MSK-IMPACT 50k
 Split: 80% train / 20% test (matches preprocessing.py)
+
+After training, this script saves a complete checkpoint bundle in
+gan_checkpoint/ :
+    generator_gan.pt      — Generator weights
+    scaler_gan.joblib     — fitted StandardScaler
+    metadata_gan.json     — column order, discrete cols, bounds, latent_dim
+    model_gan.py          — Generator class definition
 """
 
+import json
+import shutil
+from pathlib import Path
+
+import joblib
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
+
+from model_gan import Generator
 
 # ── 0. LOAD DATA ──────────────────────────────────────────────────────────────
 df_train = pd.read_csv("data_sets/survival_gan_train.csv")
@@ -78,22 +92,6 @@ loader  = DataLoader(dataset, batch_size=500, shuffle=True, drop_last=True)
 
 # ── 3. DEFINE NETWORKS ────────────────────────────────────────────────────────
 LATENT_DIM = 128
-
-class Generator(nn.Module):
-    def __init__(self, latent_dim, out_dim):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(latent_dim, 256),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(256, 256),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(256, 256),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(256, out_dim),
-        )
-
-    def forward(self, z):
-        return self.net(z)
 
 
 class Discriminator(nn.Module):
@@ -207,7 +205,41 @@ print(f"Synthetic Age mean: {synthetic_gan['Age at Diagnosis'].mean():.1f}")
 print(f"\nReal    TMB mean: {df_test['TMB Score'].mean():.2f}")
 print(f"Synthetic TMB mean: {synthetic_gan['TMB Score'].mean():.2f}")
 
-# ── 7. SAVE ───────────────────────────────────────────────────────────────────
+# ── 7. SAVE SYNTHETIC CSV ─────────────────────────────────────────────────────
 output_path = "data_sets/synthetic_vanilla_gan.csv"
 synthetic_gan.to_csv(output_path, index=False)
 print(f"\nSaved → {output_path}")
+
+# ── 8. SAVE CHECKPOINT BUNDLE  ────────────────────────────────
+# reconstruct G and sample new patients.
+ckpt_dir = Path("gan_checkpoint")
+ckpt_dir.mkdir(exist_ok=True)
+
+# 8a. Generator weights
+G_cpu_state = {k: v.detach().cpu() for k, v in G.state_dict().items()}
+torch.save(G_cpu_state, ckpt_dir / "generator_gan.pt")
+
+# 8b. Fitted scaler
+joblib.dump(scaler, ckpt_dir / "scaler_gan.joblib")
+
+# 8c. Metadata — column order, discrete handling, network shape
+metadata = {
+    "latent_dim": LATENT_DIM,
+    "n_features": n_features,
+    "columns": all_columns,
+    "discrete_columns": discrete_columns,
+    "discrete_bounds": discrete_bounds,
+    "epochs_trained": EPOCHS,
+    "architecture": "MLP 128 → 256 → 256 → 256 → n_features (LeakyReLU 0.2)",
+}
+with open(ckpt_dir / "metadata_gan.json", "w") as f:
+    json.dump(metadata, f, indent=2)
+
+# 8d. Copy the Generator class definition next to the weights.
+shutil.copy("model_gan.py", ckpt_dir / "model_gan.py")
+
+print(f"\nCheckpoint bundle saved → {ckpt_dir}/")
+print("  ├── generator_gan.pt")
+print("  ├── scaler_gan.joblib")
+print("  ├── metadata_gan.json")
+print("  └── model_gan.py")
