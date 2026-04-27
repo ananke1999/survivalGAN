@@ -2074,7 +2074,7 @@ def parse_args() -> argparse.Namespace:
     grp.add_argument("--synthetic", help="Path to a single synthetic CSV")
     grp.add_argument("--synthetic-dir", help="Directory of synthetic CSVs (one per method)")
 
-    p.add_argument("--outdir", default="eval_results")
+    p.add_argument("--outdir", default="eval_results_gan")
     p.add_argument("--time-column", default="time")
     p.add_argument("--status-column", default="status")
     p.add_argument("--seed", type=int, default=42)
