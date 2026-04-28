@@ -1,0 +1,39 @@
+# Data files
+data_sets/
+data sets/
+*.csv
+*.json
+git add .
+git commit -m "Reorganise: move all scripts to code folder, add gitignore"
+git push origin main
+
+cat > .gitignore << 'EOF'
+# Data files
+data_sets/
+data sets/
+*.csv
+*.json
+
+# Models
+models/
+*.pkl
+*.pt
+*.pth
+
+# Evaluation results
+eval_results_ctgan/
+eval_results_baseline/
+eval_results_run1/
+eval_results_gan/
+
+# Checkpoints
+gan_checkpoint/
+ckpt/
+
+# System
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+*.log
+*.zip
