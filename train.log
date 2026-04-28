@@ -1,0 +1,829 @@
+2026-04-19 22:13:39,191 [INFO] aws_driver: ======================================================================
+2026-04-19 22:13:39,191 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-19 22:13:39,191 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 512, 'synthetic_count': None, 'seed': 42, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-19 22:13:39,191 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-19 22:13:39,192 [INFO] aws_driver: Python: 3.12.3
+2026-04-19 22:13:39,192 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-19 22:13:39,192 [INFO] aws_driver: CUDA available: True
+2026-04-19 22:13:39,192 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-19 22:13:39,192 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-19 22:13:39,192 [INFO] aws_driver: ======================================================================
+2026-04-19 22:13:39,192 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-19 22:13:39,192 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-19 22:13:39,239 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-19 22:13:39,239 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-19 22:13:39,239 [INFO] aws_driver: Event rate: 0.386
+2026-04-19 22:13:39,240 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-19 22:13:39,240 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=512, device=cuda, synthetic_count=34938
+2026-04-19 22:13:39,246 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-19 22:13:39,247 [INFO] survGAN: Training TTE uncensoring model (synthcity)...
+2026-04-19 22:14:04,156 [ERROR] aws_driver: fit() crashed; full traceback:
+2026-04-19 22:14:04,165 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/numba/core/serialize.py", line 30, in _numba_unpickle
+    def _numba_unpickle(address, bytedata, hashed):
+    
+KeyboardInterrupt
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 446, in main
+    pipeline.fit(df)
+  File "/home/ubuntu/survivalGAN/survGAN.py", line 1303, in fit
+    self.tte_model.fit(Xcov, T, E)
+  File "/home/ubuntu/survivalGAN/survGAN.py", line 72, in fit
+    self.surv_model.fit(X, T, Y)
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/pydantic/deprecated/decorator.py", line 56, in wrapper_function
+    return vd.call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/pydantic/deprecated/decorator.py", line 151, in call
+    return self.execute(m)
+           ^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/pydantic/deprecated/decorator.py", line 227, in execute
+    return self.raw_function(**d, **var_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/synthcity/plugins/core/models/survival_analysis/surv_deephit.py", line 107, in fit
+    training_model.fit(
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/base.py", line 294, in fit
+    log = self.fit_dataloader(dataloader, epochs, callbacks, verbose, metrics, val_dataloader)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/base.py", line 247, in fit_dataloader
+    stop = self.callbacks.on_epoch_end()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/callbacks.py", line 128, in on_epoch_end
+    stop_signal = self.apply_callbacks(lambda x: x.on_epoch_end())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/callbacks.py", line 97, in apply_callbacks
+    stop = func(c)
+           ^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/callbacks.py", line 128, in <lambda>
+    stop_signal = self.apply_callbacks(lambda x: x.on_epoch_end())
+                                                 ^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/callbacks.py", line 289, in on_epoch_end
+    scores = self.model.score_in_batches_dataloader(self.dataloader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torchtuples/base.py", line 434, in score_in_batches_dataloader
+    for data in dataloader:
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 675, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 53, in fetch
+    data = self.dataset[possibly_batched_index]
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/pycox/models/data.py", line 135, in __getitem__
+    rank_mat = pair_rank_mat(*target)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/venv_survgan/lib/python3.12/site-packages/pycox/models/data.py", line 127, in pair_rank_mat
+    mat = _pair_rank_mat(mat, idx_durations, events, dtype)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SystemError: CPUDispatcher(<function _pair_rank_mat at 0x7aed2ce4a980>) returned a result with an exception set
+
+2026-04-19 22:21:19,004 [INFO] aws_driver: ======================================================================
+2026-04-19 22:21:19,004 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-19 22:21:19,004 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 512, 'synthetic_count': None, 'seed': 42, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-19 22:21:19,004 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-19 22:21:19,004 [INFO] aws_driver: Python: 3.12.3
+2026-04-19 22:21:19,004 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-19 22:21:19,004 [INFO] aws_driver: CUDA available: True
+2026-04-19 22:21:19,005 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-19 22:21:19,005 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-19 22:21:19,005 [INFO] aws_driver: ======================================================================
+2026-04-19 22:21:19,005 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-19 22:21:19,005 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-19 22:21:19,049 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-19 22:21:19,049 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-19 22:21:19,050 [INFO] aws_driver: Event rate: 0.386
+2026-04-19 22:21:19,050 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-19 22:21:19,050 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=512, device=cuda, synthetic_count=34938
+2026-04-19 22:21:19,052 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-19 22:21:19,053 [INFO] survGAN: Training TTE model...
+2026-04-19 22:21:55,381 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5235  noise=off
+2026-04-19 22:22:11,489 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-19 22:22:11,490 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-19 23:39:45,805 [INFO] aws_driver: Training finished in 78.4 min (4706.8s)
+2026-04-19 23:39:45,805 [INFO] aws_driver: Peak GPU memory: 1.16 GB
+2026-04-19 23:39:45,805 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-19 23:39:45,824 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-19 23:39:45,825 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 463, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-19 23:39:45,825 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-19 23:39:46,389 [INFO] survGAN: TTE predict: clamped 3 below / 118 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-19 23:39:46,395 [INFO] aws_driver: Generation finished in 0.6s
+2026-04-19 23:39:46,395 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-19 23:39:46,397 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.672/10.846/87.716  out-of-range: 6 below / 314 above
+2026-04-19 23:39:46,398 [INFO] aws_driver: Clipping 320 synthetic time values into [0.033, 90.838] before saving.
+2026-04-19 23:39:46,399 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-19 23:39:46,489 [INFO] aws_driver: === Precision match report ===
+2026-04-19 23:39:46,489 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-19 23:39:46,489 [INFO] aws_driver:   Age at Diagnosis                                 89         87         82  snap→89_vals,int
+2026-04-19 23:39:46,489 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-19 23:39:46,489 [INFO] aws_driver:   Cancer Type                                      16         17         16  snap→16_vals,int
+2026-04-19 23:39:46,489 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-19 23:39:46,489 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34899         74  snap→93_vals
+2026-04-19 23:39:46,489 [INFO] aws_driver:   FACETS Estimated Purity                         105      34911         91  snap→105_vals
+2026-04-19 23:39:46,490 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Fraction Genome Altered                        6809      34923       5396  round→4dp
+2026-04-19 23:39:46,490 [INFO] aws_driver:   MSI Score                                      1274      34891      34891  round→14dp
+2026-04-19 23:39:46,490 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Mutation Count                                   86         80         72  snap→86_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Sample coverage                                1319       1159       1159  round→0dp,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-19 23:39:46,490 [INFO] aws_driver:   TMB Score                                       297      34873        241  snap→297_vals
+2026-04-19 23:39:46,490 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34916         19  snap→25_vals
+2026-04-19 23:39:46,490 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-19 23:39:46,490 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-19 23:39:46,499 [INFO] aws_driver: === Physical constraint report ===
+2026-04-19 23:39:46,499 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-19 23:39:46,499 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-19 23:39:46,499 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,499 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                     4865        0          0  13.92%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]                543      166          0   2.03%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                   10        0          0   0.03%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-19 23:39:46,500 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-19 23:39:46,501 [WARNING] aws_driver: 5584 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-19 23:39:46,749 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-19 23:39:46,749 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-19 23:39:46,749 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    63.778  diff= 13.6%
+2026-04-19 23:39:46,750 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.905  diff=  0.4%
+2026-04-19 23:39:46,750 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     7.044  diff=  3.0%
+2026-04-19 23:39:46,750 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.443  diff=  0.3%
+2026-04-19 23:39:46,750 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.501  diff=  1.9%
+2026-04-19 23:39:46,751 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.470  diff=  0.5%
+2026-04-19 23:39:46,751 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.894  diff=  0.0%
+2026-04-19 23:39:46,751 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.305  diff=  1.1%
+2026-04-19 23:39:46,751 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.141  diff= 28.2%
+2026-04-19 23:39:46,752 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.468  diff= 12.0%
+2026-04-19 23:39:46,752 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.666  diff=  0.2%
+2026-04-19 23:39:46,752 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=     9.226  diff= 11.0%
+2026-04-19 23:39:46,752 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.016  diff=  4.9%
+2026-04-19 23:39:46,753 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   579.657  diff=  8.2%
+2026-04-19 23:39:46,753 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.453  diff=  0.3%
+2026-04-19 23:39:46,753 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     7.672  diff=  8.2%
+2026-04-19 23:39:46,753 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    39.546  diff=  7.3%
+2026-04-19 23:39:46,754 [INFO] aws_driver:   status                          real=     0.386  synth=     0.387  diff=  0.3%
+2026-04-19 23:39:46,754 [INFO] aws_driver:   time                            real=    22.936  synth=    16.297  diff= 28.9%
+2026-04-19 23:39:46,754 [INFO] aws_driver: Done.
+2026-04-20 19:41:56,996 [INFO] aws_driver: ======================================================================
+2026-04-20 19:41:56,997 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-20 19:41:56,997 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 512, 'synthetic_count': None, 'seed': 42, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-20 19:41:56,997 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-20 19:41:56,997 [INFO] aws_driver: Python: 3.12.3
+2026-04-20 19:41:56,997 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-20 19:41:56,997 [INFO] aws_driver: CUDA available: True
+2026-04-20 19:41:56,997 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-20 19:41:56,997 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-20 19:41:56,997 [INFO] aws_driver: ======================================================================
+2026-04-20 19:41:56,997 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-20 19:41:56,997 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-20 19:41:57,046 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-20 19:41:57,047 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-20 19:41:57,047 [INFO] aws_driver: Event rate: 0.386
+2026-04-20 19:41:57,047 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-20 19:41:57,047 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=512, device=cuda, synthetic_count=34938
+2026-04-20 19:41:57,053 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-20 19:41:57,055 [INFO] survGAN: Training TTE model...
+2026-04-20 19:42:38,577 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5235  noise=off
+2026-04-20 19:43:00,536 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-20 19:43:00,542 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-20 21:00:33,203 [INFO] aws_driver: Training finished in 78.6 min (4716.1s)
+2026-04-20 21:00:33,203 [INFO] aws_driver: Peak GPU memory: 1.16 GB
+2026-04-20 21:00:33,204 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-20 21:00:33,236 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-20 21:00:33,237 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 463, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-20 21:00:33,237 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-20 21:00:33,791 [INFO] survGAN: TTE predict: clamped 3 below / 118 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-20 21:00:33,794 [INFO] aws_driver: Generation finished in 0.6s
+2026-04-20 21:00:33,794 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-20 21:00:33,798 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.672/10.846/87.716  out-of-range: 6 below / 314 above
+2026-04-20 21:00:33,799 [INFO] aws_driver: Clipping 320 synthetic time values into [0.033, 90.838] before saving.
+2026-04-20 21:00:33,799 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-20 21:00:33,887 [INFO] aws_driver: === Precision match report ===
+2026-04-20 21:00:33,887 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Age at Diagnosis                                 89         87         82  snap→89_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Cancer Type                                      16         17         16  snap→16_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34899         74  snap→93_vals
+2026-04-20 21:00:33,888 [INFO] aws_driver:   FACETS Estimated Purity                         105      34911         91  snap→105_vals
+2026-04-20 21:00:33,888 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Fraction Genome Altered                        6809      34923       5396  round→4dp
+2026-04-20 21:00:33,888 [INFO] aws_driver:   MSI Score                                      1274      34891      34891  round→14dp
+2026-04-20 21:00:33,888 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Mutation Count                                   86         80         72  snap→86_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Sample coverage                                1319       1159       1159  round→0dp,int
+2026-04-20 21:00:33,888 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-20 21:00:33,889 [INFO] aws_driver:   TMB Score                                       297      34873        241  snap→297_vals
+2026-04-20 21:00:33,889 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34916         19  snap→25_vals
+2026-04-20 21:00:33,889 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-20 21:00:33,889 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-20 21:00:33,897 [INFO] aws_driver: === Physical constraint report ===
+2026-04-20 21:00:33,897 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-20 21:00:33,897 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                     4865        0          0  13.92%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]                543      166          0   2.03%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                   10        0          0   0.03%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,898 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-20 21:00:33,899 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-20 21:00:33,899 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-20 21:00:33,899 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-20 21:00:33,899 [WARNING] aws_driver: 5584 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-20 21:00:34,146 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-20 21:00:34,146 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-20 21:00:34,146 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    63.778  diff= 13.6%
+2026-04-20 21:00:34,146 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.905  diff=  0.4%
+2026-04-20 21:00:34,147 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     7.044  diff=  3.0%
+2026-04-20 21:00:34,147 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.443  diff=  0.3%
+2026-04-20 21:00:34,147 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.501  diff=  1.9%
+2026-04-20 21:00:34,147 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.470  diff=  0.5%
+2026-04-20 21:00:34,148 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.894  diff=  0.0%
+2026-04-20 21:00:34,148 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.305  diff=  1.1%
+2026-04-20 21:00:34,148 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.141  diff= 28.2%
+2026-04-20 21:00:34,148 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.468  diff= 12.0%
+2026-04-20 21:00:34,149 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.666  diff=  0.2%
+2026-04-20 21:00:34,149 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=     9.226  diff= 11.0%
+2026-04-20 21:00:34,149 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.016  diff=  4.9%
+2026-04-20 21:00:34,149 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   579.657  diff=  8.2%
+2026-04-20 21:00:34,150 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.453  diff=  0.3%
+2026-04-20 21:00:34,150 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     7.672  diff=  8.2%
+2026-04-20 21:00:34,150 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    39.546  diff=  7.3%
+2026-04-20 21:00:34,150 [INFO] aws_driver:   status                          real=     0.386  synth=     0.387  diff=  0.3%
+2026-04-20 21:00:34,151 [INFO] aws_driver:   time                            real=    22.936  synth=    16.297  diff= 28.9%
+2026-04-20 21:00:34,151 [INFO] aws_driver: Done.
+2026-04-21 01:01:14,578 [INFO] aws_driver: ======================================================================
+2026-04-21 01:01:14,578 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-21 01:01:14,578 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 256, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-21 01:01:14,578 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-21 01:01:14,578 [INFO] aws_driver: Python: 3.12.3
+2026-04-21 01:01:14,578 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-21 01:01:14,578 [INFO] aws_driver: CUDA available: True
+2026-04-21 01:01:14,578 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-21 01:01:14,578 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-21 01:01:14,579 [INFO] aws_driver: ======================================================================
+2026-04-21 01:01:14,579 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-21 01:01:14,579 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-21 01:01:14,627 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-21 01:01:14,627 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-21 01:01:14,628 [INFO] aws_driver: Event rate: 0.386
+2026-04-21 01:01:14,628 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-21 01:01:14,628 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=256, device=cuda, synthetic_count=34938
+2026-04-21 01:01:14,630 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-21 01:01:14,631 [INFO] survGAN: Training TTE model...
+2026-04-21 01:01:50,154 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5235  noise=off
+2026-04-21 01:02:05,837 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-21 01:02:05,838 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-21 03:21:39,048 [INFO] aws_driver: Training finished in 140.4 min (8424.4s)
+2026-04-21 03:21:39,048 [INFO] aws_driver: Peak GPU memory: 1.16 GB
+2026-04-21 03:21:39,048 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-21 03:21:39,079 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-21 03:21:39,079 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 463, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-21 03:21:39,079 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-21 03:21:39,659 [INFO] survGAN: TTE predict: clamped 2 below / 26 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-21 03:21:39,662 [INFO] aws_driver: Generation finished in 0.6s
+2026-04-21 03:21:39,662 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-21 03:21:39,664 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.871/11.314/77.522  out-of-range: 4 below / 177 above
+2026-04-21 03:21:39,666 [INFO] aws_driver: Clipping 181 synthetic time values into [0.033, 90.838] before saving.
+2026-04-21 03:21:39,666 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-21 03:21:39,753 [INFO] aws_driver: === Precision match report ===
+2026-04-21 03:21:39,754 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Age at Diagnosis                                 89         82         82  snap→89_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Cancer Type                                      16         18         16  snap→16_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34879         75  snap→93_vals
+2026-04-21 03:21:39,754 [INFO] aws_driver:   FACETS Estimated Purity                         105      34910         90  snap→105_vals
+2026-04-21 03:21:39,754 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Fraction Genome Altered                        6809      34901       5430  round→4dp
+2026-04-21 03:21:39,754 [INFO] aws_driver:   MSI Score                                      1274      34893      34893  round→14dp
+2026-04-21 03:21:39,754 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-21 03:21:39,754 [INFO] aws_driver:   Mutation Count                                   86         92         82  snap→86_vals,int
+2026-04-21 03:21:39,755 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-21 03:21:39,755 [INFO] aws_driver:   Sample coverage                                1319       1172       1172  round→0dp,int
+2026-04-21 03:21:39,755 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-21 03:21:39,755 [INFO] aws_driver:   TMB Score                                       297      34869        258  snap→297_vals
+2026-04-21 03:21:39,755 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34922         23  snap→25_vals
+2026-04-21 03:21:39,755 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-21 03:21:39,755 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-21 03:21:39,763 [INFO] aws_driver: === Physical constraint report ===
+2026-04-21 03:21:39,763 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        1          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                     2201        0          0   6.30%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]                518      359          0   2.51%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                    0        0          0   0.00%  json
+2026-04-21 03:21:39,764 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,765 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-21 03:21:39,765 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-21 03:21:39,765 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-21 03:21:39,765 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-21 03:21:39,765 [WARNING] aws_driver: 3079 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-21 03:21:40,009 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-21 03:21:40,009 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-21 03:21:40,010 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    57.796  diff=  2.9%
+2026-04-21 03:21:40,010 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.883  diff=  0.1%
+2026-04-21 03:21:40,010 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     6.937  diff=  4.5%
+2026-04-21 03:21:40,010 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.442  diff=  0.2%
+2026-04-21 03:21:40,011 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.466  diff=  0.5%
+2026-04-21 03:21:40,011 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.459  diff=  2.7%
+2026-04-21 03:21:40,011 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.894  diff=  0.0%
+2026-04-21 03:21:40,011 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.302  diff=  0.1%
+2026-04-21 03:21:40,012 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.184  diff=  6.3%
+2026-04-21 03:21:40,012 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.611  diff= 22.8%
+2026-04-21 03:21:40,012 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.671  diff=  0.0%
+2026-04-21 03:21:40,013 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=    10.259  diff= 23.4%
+2026-04-21 03:21:40,013 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.023  diff= 37.3%
+2026-04-21 03:21:40,013 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   661.446  diff=  4.8%
+2026-04-21 03:21:40,013 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.452  diff=  0.2%
+2026-04-21 03:21:40,014 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     8.629  diff= 21.7%
+2026-04-21 03:21:40,014 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    41.462  diff=  2.9%
+2026-04-21 03:21:40,014 [INFO] aws_driver:   status                          real=     0.386  synth=     0.362  diff=  6.3%
+2026-04-21 03:21:40,014 [INFO] aws_driver:   time                            real=    22.936  synth=    16.131  diff= 29.7%
+2026-04-21 03:21:40,014 [INFO] aws_driver: Done.
+2026-04-23 22:20:12,643 [INFO] aws_driver: ======================================================================
+2026-04-23 22:20:12,644 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-23 22:20:12,644 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic2.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 1, 'batch_size': 256, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-23 22:20:12,644 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-23 22:20:12,644 [INFO] aws_driver: Python: 3.12.3
+2026-04-23 22:20:12,644 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-23 22:20:12,644 [INFO] aws_driver: CUDA available: True
+2026-04-23 22:20:12,644 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-23 22:20:12,644 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-23 22:20:12,644 [INFO] aws_driver: ======================================================================
+2026-04-23 22:20:12,645 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-23 22:20:12,645 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-23 22:20:12,692 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-23 22:20:12,692 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-23 22:20:12,696 [INFO] aws_driver: Event rate: 0.386
+2026-04-23 22:20:12,696 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-23 22:20:12,696 [INFO] aws_driver: Effective config: n_iter=1, batch_size=256, device=cuda, synthetic_count=34938
+2026-04-23 22:20:12,702 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-23 22:20:12,707 [INFO] survGAN: Training TTE model...
+2026-04-23 22:20:48,338 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5235  noise=off
+2026-04-23 22:21:04,083 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-23 22:21:04,086 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-23 22:22:00,937 [INFO] aws_driver: Training finished in 1.8 min (108.2s)
+2026-04-23 22:22:00,938 [INFO] aws_driver: Peak GPU memory: 1.16 GB
+2026-04-23 22:22:00,938 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-23 22:22:00,965 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-23 22:22:00,965 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 456, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-23 22:22:00,965 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-23 22:22:01,549 [INFO] survGAN: TTE predict: clamped 49 below / 200 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-23 22:22:01,555 [INFO] aws_driver: Generation finished in 0.6s
+2026-04-23 22:22:01,555 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-23 22:22:01,558 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.120/8.721/107.720  out-of-range: 83 below / 502 above
+2026-04-23 22:22:01,559 [INFO] aws_driver: Clipping 585 synthetic time values into [0.033, 90.838] before saving.
+2026-04-23 22:22:01,559 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-23 22:22:01,647 [INFO] aws_driver: === Precision match report ===
+2026-04-23 22:22:01,647 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-23 22:22:01,647 [INFO] aws_driver:   Age at Diagnosis                                 89        137         89  snap→89_vals,int
+2026-04-23 22:22:01,647 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-23 22:22:01,647 [INFO] aws_driver:   Cancer Type                                      16         28         16  snap→16_vals,int
+2026-04-23 22:22:01,647 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-23 22:22:01,647 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34929         86  snap→93_vals
+2026-04-23 22:22:01,648 [INFO] aws_driver:   FACETS Estimated Purity                         105      34928        105  snap→105_vals
+2026-04-23 22:22:01,648 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Fraction Genome Altered                        6809      34925       9977  round→4dp
+2026-04-23 22:22:01,648 [INFO] aws_driver:   MSI Score                                      1274      34921      34921  round→14dp
+2026-04-23 22:22:01,648 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Mutation Count                                   86        176         86  snap→86_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Sample coverage                                1319       1467       1467  round→0dp,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-23 22:22:01,648 [INFO] aws_driver:   TMB Score                                       297      34920        289  snap→297_vals
+2026-04-23 22:22:01,648 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34929         25  snap→25_vals
+2026-04-23 22:22:01,648 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-23 22:22:01,649 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-23 22:22:01,657 [INFO] aws_driver: === Physical constraint report ===
+2026-04-23 22:22:01,657 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0      701          0   2.01%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                     1337     1117          0   7.02%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]               3129      336          0   9.92%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                  151        0          0   0.43%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-23 22:22:01,658 [WARNING] aws_driver: 6771 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-23 22:22:01,895 [INFO] aws_driver: Wrote synthetic data to synthetic2.csv
+2026-04-23 22:22:01,895 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-23 22:22:01,896 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    59.383  diff=  5.7%
+2026-04-23 22:22:01,896 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     5.252  diff=  7.5%
+2026-04-23 22:22:01,896 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     7.353  diff=  1.2%
+2026-04-23 22:22:01,896 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.364  diff= 17.6%
+2026-04-23 22:22:01,896 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.189  diff= 10.8%
+2026-04-23 22:22:01,897 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.504  diff=  6.7%
+2026-04-23 22:22:01,897 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.928  diff=  3.8%
+2026-04-23 22:22:01,897 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.361  diff= 19.8%
+2026-04-23 22:22:01,897 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.325  diff= 65.9%
+2026-04-23 22:22:01,898 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.495  diff= 14.0%
+2026-04-23 22:22:01,898 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.779  diff=  4.1%
+2026-04-23 22:22:01,898 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=     9.564  diff= 15.1%
+2026-04-23 22:22:01,898 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.017  diff=  2.8%
+2026-04-23 22:22:01,898 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   576.056  diff=  8.8%
+2026-04-23 22:22:01,899 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.501  diff= 11.2%
+2026-04-23 22:22:01,899 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=    10.436  diff= 47.2%
+2026-04-23 22:22:01,899 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    41.682  diff=  2.3%
+2026-04-23 22:22:01,899 [INFO] aws_driver:   status                          real=     0.386  synth=     0.605  diff= 56.7%
+2026-04-23 22:22:01,899 [INFO] aws_driver:   time                            real=    22.936  synth=    14.461  diff= 37.0%
+2026-04-23 22:22:01,899 [INFO] aws_driver: Done.
+2026-04-25 13:36:42,176 [INFO] aws_driver: ======================================================================
+2026-04-25 13:36:42,178 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-25 13:36:42,178 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 256, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-25 13:36:42,178 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-25 13:36:42,178 [INFO] aws_driver: Python: 3.12.3
+2026-04-25 13:36:42,178 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-25 13:36:42,178 [INFO] aws_driver: CUDA available: True
+2026-04-25 13:36:42,178 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-25 13:36:42,178 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-25 13:36:42,178 [INFO] aws_driver: ======================================================================
+2026-04-25 13:36:42,178 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-25 13:36:42,178 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-25 13:36:42,226 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-25 13:36:42,226 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-25 13:36:42,229 [INFO] aws_driver: Event rate: 0.386
+2026-04-25 13:36:42,230 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-25 13:36:42,230 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=256, device=cuda, synthetic_count=34938
+2026-04-25 13:36:42,235 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-25 13:36:42,240 [INFO] survGAN: Training TTE model...
+2026-04-25 13:37:17,632 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5235  noise=on
+2026-04-25 13:37:33,471 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-25 13:37:33,473 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-25 15:52:22,970 [INFO] aws_driver: Training finished in 135.7 min (8140.7s)
+2026-04-25 15:52:22,970 [INFO] aws_driver: Peak GPU memory: 1.16 GB
+2026-04-25 15:52:22,970 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-25 15:52:23,000 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-25 15:52:23,001 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 441, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-25 15:52:23,001 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-25 15:52:23,580 [INFO] survGAN: TTE predict: clamped 1 below / 63 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-25 15:52:23,583 [INFO] aws_driver: Generation finished in 0.6s
+2026-04-25 15:52:23,583 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-25 15:52:23,586 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.835/11.251/87.603  out-of-range: 3 below / 299 above
+2026-04-25 15:52:23,588 [INFO] aws_driver: Clipping 302 synthetic time values into [0.033, 90.838] before saving.
+2026-04-25 15:52:23,588 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-25 15:52:23,676 [INFO] aws_driver: === Precision match report ===
+2026-04-25 15:52:23,677 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Age at Diagnosis                                 89         82         82  snap→89_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Cancer Type                                      16         18         16  snap→16_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34879         75  snap→93_vals
+2026-04-25 15:52:23,677 [INFO] aws_driver:   FACETS Estimated Purity                         105      34910         90  snap→105_vals
+2026-04-25 15:52:23,677 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Fraction Genome Altered                        6809      34901       5430  round→4dp
+2026-04-25 15:52:23,677 [INFO] aws_driver:   MSI Score                                      1274      34893      34893  round→14dp
+2026-04-25 15:52:23,677 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Mutation Count                                   86         92         82  snap→86_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-25 15:52:23,677 [INFO] aws_driver:   Sample coverage                                1319       1172       1172  round→0dp,int
+2026-04-25 15:52:23,678 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-25 15:52:23,678 [INFO] aws_driver:   TMB Score                                       297      34869        258  snap→297_vals
+2026-04-25 15:52:23,678 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34922         23  snap→25_vals
+2026-04-25 15:52:23,678 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-25 15:52:23,679 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-25 15:52:23,687 [INFO] aws_driver: === Physical constraint report ===
+2026-04-25 15:52:23,687 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-25 15:52:23,687 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-25 15:52:23,687 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,687 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-25 15:52:23,687 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        1          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                     2201        0          0   6.30%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]                518      359          0   2.51%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                    0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-25 15:52:23,688 [WARNING] aws_driver: 3079 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-25 15:52:23,930 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-25 15:52:23,930 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-25 15:52:23,930 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    57.796  diff=  2.9%
+2026-04-25 15:52:23,931 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.883  diff=  0.1%
+2026-04-25 15:52:23,931 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     6.937  diff=  4.5%
+2026-04-25 15:52:23,931 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.442  diff=  0.2%
+2026-04-25 15:52:23,932 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.466  diff=  0.5%
+2026-04-25 15:52:23,932 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.459  diff=  2.7%
+2026-04-25 15:52:23,932 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.894  diff=  0.0%
+2026-04-25 15:52:23,932 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.302  diff=  0.1%
+2026-04-25 15:52:23,932 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.184  diff=  6.3%
+2026-04-25 15:52:23,933 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.611  diff= 22.8%
+2026-04-25 15:52:23,933 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.671  diff=  0.0%
+2026-04-25 15:52:23,933 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=    10.259  diff= 23.4%
+2026-04-25 15:52:23,933 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.023  diff= 37.3%
+2026-04-25 15:52:23,934 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   661.446  diff=  4.8%
+2026-04-25 15:52:23,934 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.452  diff=  0.2%
+2026-04-25 15:52:23,934 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     8.629  diff= 21.7%
+2026-04-25 15:52:23,934 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    41.462  diff=  2.9%
+2026-04-25 15:52:23,935 [INFO] aws_driver:   status                          real=     0.386  synth=     0.362  diff=  6.3%
+2026-04-25 15:52:23,935 [INFO] aws_driver:   time                            real=    22.936  synth=    16.609  diff= 27.6%
+2026-04-25 15:52:23,935 [INFO] aws_driver: Done.
+2026-04-26 18:58:38,229 [INFO] aws_driver: ======================================================================
+2026-04-26 18:58:38,230 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-26 18:58:38,230 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 1500, 'batch_size': 500, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-26 18:58:38,230 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-26 18:58:38,230 [INFO] aws_driver: Python: 3.12.3
+2026-04-26 18:58:38,230 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-26 18:58:38,230 [INFO] aws_driver: CUDA available: True
+2026-04-26 18:58:38,230 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-26 18:58:38,230 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-26 18:58:38,230 [INFO] aws_driver: ======================================================================
+2026-04-26 18:58:38,231 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-26 18:58:38,231 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-26 18:58:38,279 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-26 18:58:38,279 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-26 18:58:38,282 [INFO] aws_driver: Event rate: 0.386
+2026-04-26 18:58:38,282 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-26 18:58:38,282 [INFO] aws_driver: Effective config: n_iter=1500, batch_size=500, device=cuda, synthetic_count=34938
+2026-04-26 18:58:38,289 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-26 18:58:38,294 [INFO] survGAN: Training TTE model...
+2026-04-26 19:05:46,263 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.8899  noise=on
+2026-04-26 19:06:00,116 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-26 19:06:00,117 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-26 19:44:48,741 [INFO] aws_driver: Training finished in 46.2 min (2770.5s)
+2026-04-26 19:44:48,742 [INFO] aws_driver: Peak GPU memory: 1.11 GB
+2026-04-26 19:44:48,742 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-26 19:44:48,771 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-26 19:44:48,772 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 434, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-26 19:44:48,772 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-26 19:44:50,772 [INFO] survGAN: TTE predict: clamped 11 below / 228 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-26 19:44:50,778 [INFO] aws_driver: Generation finished in 2.0s
+2026-04-26 19:44:50,778 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-26 19:44:50,781 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.022, 134.976]  syn q[1/50/99]=0.527/13.344/112.128  out-of-range: 15 below / 612 above
+2026-04-26 19:44:50,782 [INFO] aws_driver: Clipping 627 synthetic time values into [0.033, 90.838] before saving.
+2026-04-26 19:44:50,782 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-26 19:44:50,870 [INFO] aws_driver: === Precision match report ===
+2026-04-26 19:44:50,870 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Age at Diagnosis                                 89         89         84  snap→89_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Cancer Type                                      16         17         16  snap→16_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34925         85  snap→93_vals
+2026-04-26 19:44:50,870 [INFO] aws_driver:   FACETS Estimated Purity                         105      34913         87  snap→105_vals
+2026-04-26 19:44:50,870 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-26 19:44:50,870 [INFO] aws_driver:   Fraction Genome Altered                        6809      34917       6567  round→4dp
+2026-04-26 19:44:50,870 [INFO] aws_driver:   MSI Score                                      1274      34894      34894  round→14dp
+2026-04-26 19:44:50,870 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-26 19:44:50,871 [INFO] aws_driver:   Mutation Count                                   86         97         86  snap→86_vals,int
+2026-04-26 19:44:50,871 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-26 19:44:50,871 [INFO] aws_driver:   Sample coverage                                1319       1165       1165  round→0dp,int
+2026-04-26 19:44:50,871 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-26 19:44:50,871 [INFO] aws_driver:   TMB Score                                       297      34899        286  snap→297_vals
+2026-04-26 19:44:50,871 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34901         17  snap→25_vals
+2026-04-26 19:44:50,871 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-26 19:44:50,872 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-26 19:44:50,880 [INFO] aws_driver: === Physical constraint report ===
+2026-04-26 19:44:50,880 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-26 19:44:50,880 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-26 19:44:50,880 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,880 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-26 19:44:50,880 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                       75       18          0   0.27%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]                119      363          0   1.38%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                    0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-26 19:44:50,881 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-26 19:44:50,882 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-26 19:44:50,882 [WARNING] aws_driver: 575 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-26 19:44:51,123 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-26 19:44:51,124 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-26 19:44:51,124 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    53.421  diff=  4.9%
+2026-04-26 19:44:51,124 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.883  diff=  0.1%
+2026-04-26 19:44:51,124 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     7.447  diff=  2.5%
+2026-04-26 19:44:51,125 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.439  diff=  0.6%
+2026-04-26 19:44:51,125 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.511  diff=  2.3%
+2026-04-26 19:44:51,125 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.478  diff=  1.2%
+2026-04-26 19:44:51,125 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.888  diff=  0.7%
+2026-04-26 19:44:51,126 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.304  diff=  0.9%
+2026-04-26 19:44:51,126 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.205  diff=  4.7%
+2026-04-26 19:44:51,126 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.487  diff= 13.4%
+2026-04-26 19:44:51,126 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.668  diff=  0.1%
+2026-04-26 19:44:51,126 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=     8.449  diff=  1.6%
+2026-04-26 19:44:51,127 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.019  diff= 17.1%
+2026-04-26 19:44:51,127 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   626.182  diff=  0.8%
+2026-04-26 19:44:51,127 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.456  diff=  1.1%
+2026-04-26 19:44:51,127 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     8.402  diff= 18.5%
+2026-04-26 19:44:51,128 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    44.733  diff=  4.8%
+2026-04-26 19:44:51,128 [INFO] aws_driver:   status                          real=     0.386  synth=     0.398  diff=  3.0%
+2026-04-26 19:44:51,128 [INFO] aws_driver:   time                            real=    22.936  synth=    19.244  diff= 16.1%
+2026-04-26 19:44:51,128 [INFO] aws_driver: Done.
+2026-04-26 20:08:11,959 [INFO] aws_driver: ======================================================================
+2026-04-26 20:08:11,959 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-26 20:08:11,959 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 2500, 'batch_size': 256, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-26 20:08:11,959 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-26 20:08:11,959 [INFO] aws_driver: Python: 3.12.3
+2026-04-26 20:08:11,959 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-26 20:08:11,959 [INFO] aws_driver: CUDA available: True
+2026-04-26 20:08:11,959 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-26 20:08:11,959 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-26 20:08:11,959 [INFO] aws_driver: ======================================================================
+2026-04-26 20:08:11,959 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-26 20:08:11,959 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-26 20:08:12,002 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-26 20:08:12,002 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-26 20:08:12,002 [INFO] aws_driver: Event rate: 0.386
+2026-04-26 20:08:12,003 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-26 20:08:12,003 [INFO] aws_driver: Effective config: n_iter=2500, batch_size=256, device=cuda, synthetic_count=34938
+2026-04-26 20:08:12,004 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-26 20:08:12,005 [INFO] survGAN: Training TTE model...
+2026-04-26 20:08:43,292 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5386  noise=on
+2026-04-26 20:08:56,990 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-26 20:08:56,991 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-26 22:59:20,447 [WARNING] aws_driver: Interrupted by user during fit()
+2026-04-28 00:22:51,833 [INFO] aws_driver: ======================================================================
+2026-04-28 00:22:51,834 [INFO] aws_driver: SurvivalGAN AWS training run
+2026-04-28 00:22:51,834 [INFO] aws_driver: Args: {'input': 'data sets/survival_gan_train.csv', 'output': 'synthetic.csv', 'checkpoint_dir': 'ckpt', 'metadata_json': None, 'n_iter': 3000, 'batch_size': 256, 'synthetic_count': None, 'seed': 99, 'device': 'auto', 'time_column': 'time', 'status_column': 'status', 'skip_train': False, 'skip_generate': False, 'regenerate': False, 'clip_output_time': True, 'match_real_precision': True, 'precision_unique_threshold': 1000, 'enforce_constraints': True}
+2026-04-28 00:22:51,834 [INFO] aws_driver: Working directory: /home/ubuntu/survivalGAN
+2026-04-28 00:22:51,834 [INFO] aws_driver: Python: 3.12.3
+2026-04-28 00:22:51,835 [INFO] aws_driver: PyTorch: 2.2.2+cu118
+2026-04-28 00:22:51,835 [INFO] aws_driver: CUDA available: True
+2026-04-28 00:22:51,835 [INFO] aws_driver: CUDA device: NVIDIA A10G
+2026-04-28 00:22:51,835 [INFO] aws_driver: CUDA memory: 23.7 GB
+2026-04-28 00:22:51,835 [INFO] aws_driver: ======================================================================
+2026-04-28 00:22:51,835 [INFO] survGAN: GPU: NVIDIA A10G (23.7 GB)
+2026-04-28 00:22:51,835 [INFO] aws_driver: Loading data sets/survival_gan_train.csv ...
+2026-04-28 00:22:51,880 [INFO] aws_driver: Shape: (34938, 19)
+2026-04-28 00:22:51,880 [INFO] aws_driver: Columns: ['Age at Diagnosis', 'Genetic Ancestry', 'Cancer Type', 'Disease Status', 'Ploidy (FACETS)', 'FACETS Estimated Purity', 'FACETS QC', 'Whole Genome Doubling Status (FACETS)', 'Fraction Genome Altered', 'MSI Score', 'MSI Type', 'Mutation Count', 'Number of Other Cancer Types', 'Sample coverage', 'Sex', 'TMB Score', 'Pathologist Estimated Tumor Purity', 'status', 'time']
+2026-04-28 00:22:51,880 [INFO] aws_driver: Event rate: 0.386
+2026-04-28 00:22:51,881 [INFO] aws_driver: Time range: [0.03, 90.84]
+2026-04-28 00:22:51,881 [INFO] aws_driver: Effective config: n_iter=3000, batch_size=256, device=cuda, synthetic_count=34938
+2026-04-28 00:22:51,887 [INFO] aws_driver: Starting pipeline.fit() — this runs TTE → GAN → censoring predictor ...
+2026-04-28 00:22:51,888 [INFO] survGAN: Training TTE model...
+2026-04-28 00:23:23,744 [INFO] survGAN: TTE fit: T=[0.033, 90.838]  logT=[-3.411, 4.509]  residual_std(log)=0.5386  noise=on
+2026-04-28 00:23:37,676 [INFO] survGAN: Survival conditional shape: (34938, 19)
+2026-04-28 00:23:37,677 [INFO] survGAN: Training TabularGAN on (34938, 19) ...
+2026-04-28 07:05:05,112 [INFO] aws_driver: Training finished in 402.2 min (24133.2s)
+2026-04-28 07:05:05,112 [INFO] aws_driver: Peak GPU memory: 1.11 GB
+2026-04-28 07:05:05,112 [INFO] aws_driver: Saving pipeline to ckpt/pipeline.pkl ...
+2026-04-28 07:05:05,155 [ERROR] aws_driver: Checkpoint save failed — continuing to generation anyway.
+2026-04-28 07:05:05,155 [ERROR] aws_driver: Traceback (most recent call last):
+  File "/home/ubuntu/survivalGAN/train_survGAN_aws.py", line 610, in main
+    pickle.dump(pipeline, f)
+AttributeError: Can't pickle local object 'TabularGAN.__init__.<locals>._cond_loss'
+
+2026-04-28 07:05:05,161 [INFO] aws_driver: Saved model weights → ckpt/model.pt  (2.76 MB)
+2026-04-28 07:05:05,162 [INFO] aws_driver: Saved model summary → ckpt/model_summary.txt  (6.0 KB)
+2026-04-28 07:05:05,162 [INFO] aws_driver: Generating 34938 synthetic rows ...
+2026-04-28 07:05:05,614 [INFO] survGAN: TTE predict: clamped 0 below / 158 above log-T range [-3.807, 4.905] (of 34938 total)
+2026-04-28 07:05:05,617 [INFO] aws_driver: Generation finished in 0.5s
+2026-04-28 07:05:05,617 [INFO] aws_driver: Synthetic shape: (34938, 19)
+2026-04-28 07:05:05,619 [INFO] aws_driver: Synthetic time: real=[0.033, 90.838]  syn=[0.024, 134.976]  syn q[1/50/99]=0.578/13.197/98.428  out-of-range: 1 below / 449 above
+2026-04-28 07:05:05,620 [INFO] aws_driver: Clipping 450 synthetic time values into [0.033, 90.838] before saving.
+2026-04-28 07:05:05,620 [INFO] aws_driver: Matching synthetic precision to real...
+2026-04-28 07:05:05,708 [INFO] aws_driver: === Precision match report ===
+2026-04-28 07:05:05,708 [INFO] aws_driver:   column                                   real_nuniq syn_before  syn_after  method
+2026-04-28 07:05:05,708 [INFO] aws_driver:   Age at Diagnosis                                 89         97         89  snap→89_vals,int
+2026-04-28 07:05:05,708 [INFO] aws_driver:   Genetic Ancestry                                  8          8          8  snap→8_vals,int
+2026-04-28 07:05:05,708 [INFO] aws_driver:   Cancer Type                                      16         18         16  snap→16_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Disease Status                                    3          3          3  snap→3_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Ploidy (FACETS)                                  93      34927         74  snap→93_vals
+2026-04-28 07:05:05,709 [INFO] aws_driver:   FACETS Estimated Purity                         105      34921         90  snap→105_vals
+2026-04-28 07:05:05,709 [INFO] aws_driver:   FACETS QC                                         3          3          3  snap→3_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)             3          3          3  snap→3_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Fraction Genome Altered                        6809      34907       6801  round→4dp
+2026-04-28 07:05:05,709 [INFO] aws_driver:   MSI Score                                      1274      34914      34914  round→14dp
+2026-04-28 07:05:05,709 [INFO] aws_driver:   MSI Type                                          5          5          5  snap→5_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Mutation Count                                   86         97         86  snap→86_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Number of Other Cancer Types                      3          3          3  snap→3_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Sample coverage                                1319       1210       1210  round→0dp,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Sex                                               2          2          2  snap→2_vals,int
+2026-04-28 07:05:05,709 [INFO] aws_driver:   TMB Score                                       297      34915        289  snap→297_vals
+2026-04-28 07:05:05,709 [INFO] aws_driver:   Pathologist Estimated Tumor Purity               25      34912         16  snap→25_vals
+2026-04-28 07:05:05,709 [INFO] aws_driver: Enforcing physical constraints (bounds + integer dtype)...
+2026-04-28 07:05:05,710 [INFO] aws_driver: Loaded column metadata from data sets/survival_gan_column_metadata.json (19 columns)
+2026-04-28 07:05:05,719 [INFO] aws_driver: === Physical constraint report ===
+2026-04-28 07:05:05,719 [INFO] aws_driver:   column                                    dtype bounds                  n_below  n_above  n_rounded pct_mod  source
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Age at Diagnosis                            int [0, 88]                       0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Genetic Ancestry                            int [0, 7]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Cancer Type                                 int [0, 15]                       0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Disease Status                              int [0, 2]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Ploidy (FACETS)                           float [0.39, 28]                    0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   FACETS Estimated Purity                   float [0.05, 1]                     0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   FACETS QC                                   int [0, 2]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)       int [0, 2]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   Fraction Genome Altered                   float [0, 1]                      449        9          0   1.31%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   MSI Score                                 float [0, 30.2163]               3456      244          0  10.59%  json
+2026-04-28 07:05:05,719 [INFO] aws_driver:   MSI Type                                    int [0, 4]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   Mutation Count                              int [1, 86]                       0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   Number of Other Cancer Types                int [0, 2]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   Sample coverage                             int [10, 2610]                    0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   Sex                                         int [0, 1]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   TMB Score                                 float [0, 75.4835]                  0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   Pathologist Estimated Tumor Purity        float [0, 100]                      0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   status                                      int [0, 1]                        0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [INFO] aws_driver:   time                                      float [0.033, 90.838]               0        0          0   0.00%  json
+2026-04-28 07:05:05,720 [WARNING] aws_driver: 4158 synthetic values were clipped or rounded to satisfy physical constraints. Check the report above — a high percentage for any column suggests the GAN is struggling to model that feature's support.
+2026-04-28 07:05:05,964 [INFO] aws_driver: Wrote synthetic data to synthetic.csv
+2026-04-28 07:05:05,964 [INFO] aws_driver: === Real vs Synthetic means (numeric cols) ===
+2026-04-28 07:05:05,964 [INFO] aws_driver:   Age at Diagnosis                real=    56.155  synth=    53.748  diff=  4.3%
+2026-04-28 07:05:05,964 [INFO] aws_driver:   Genetic Ancestry                real=     4.886  synth=     4.873  diff=  0.3%
+2026-04-28 07:05:05,965 [INFO] aws_driver:   Cancer Type                     real=     7.263  synth=     7.157  diff=  1.5%
+2026-04-28 07:05:05,965 [INFO] aws_driver:   Disease Status                  real=     0.441  synth=     0.439  diff=  0.6%
+2026-04-28 07:05:05,965 [INFO] aws_driver:   Ploidy (FACETS)                 real=     2.455  synth=     2.445  diff=  0.4%
+2026-04-28 07:05:05,965 [INFO] aws_driver:   FACETS Estimated Purity         real=     0.472  synth=     0.462  diff=  2.2%
+2026-04-28 07:05:05,966 [INFO] aws_driver:   FACETS QC                       real=     0.894  synth=     0.892  diff=  0.2%
+2026-04-28 07:05:05,966 [INFO] aws_driver:   Whole Genome Doubling Status (FACETS)  real=     0.302  synth=     0.304  diff=  0.8%
+2026-04-28 07:05:05,966 [INFO] aws_driver:   Fraction Genome Altered         real=     0.196  synth=     0.202  diff=  3.2%
+2026-04-28 07:05:05,966 [INFO] aws_driver:   MSI Score                       real=     1.311  synth=     1.448  diff= 10.4%
+2026-04-28 07:05:05,967 [INFO] aws_driver:   MSI Type                        real=     2.671  synth=     2.673  diff=  0.1%
+2026-04-28 07:05:05,967 [INFO] aws_driver:   Mutation Count                  real=     8.312  synth=     8.794  diff=  5.8%
+2026-04-28 07:05:05,967 [INFO] aws_driver:   Number of Other Cancer Types    real=     0.016  synth=     0.017  diff=  4.9%
+2026-04-28 07:05:05,967 [INFO] aws_driver:   Sample coverage                 real=   631.305  synth=   605.855  diff=  4.0%
+2026-04-28 07:05:05,967 [INFO] aws_driver:   Sex                             real=     0.451  synth=     0.450  diff=  0.3%
+2026-04-28 07:05:05,968 [INFO] aws_driver:   TMB Score                       real=     7.088  synth=     7.108  diff=  0.3%
+2026-04-28 07:05:05,968 [INFO] aws_driver:   Pathologist Estimated Tumor Purity  real=    42.680  synth=    42.763  diff=  0.2%
+2026-04-28 07:05:05,968 [INFO] aws_driver:   status                          real=     0.386  synth=     0.356  diff=  7.8%
+2026-04-28 07:05:05,968 [INFO] aws_driver:   time                            real=    22.936  synth=    18.684  diff= 18.5%
+2026-04-28 07:05:05,968 [INFO] aws_driver: Done.
