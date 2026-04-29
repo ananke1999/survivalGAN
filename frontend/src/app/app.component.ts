@@ -15,19 +15,36 @@ interface MetricFigure {
   description: string;
 }
 
+type ViewPage =
+  | 'introduction'
+  | 'vanilla'
+  | 'survival'
+  | 'ctgan'
+  | 'conclusion';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
+  selectedPage: ViewPage = 'introduction';
+
+  readonly pages: { key: ViewPage; label: string }[] = [
+    { key: 'introduction', label: 'Introduction' },
+    { key: 'vanilla', label: 'Vanilla GAN Baseline' },
+    { key: 'ctgan', label: 'CTGAN Baseline' },
+    { key: 'survival', label: 'Survival GAN' },
+    { key: 'conclusion', label: 'Conclusion' },
+  ];
+
   readonly latentDim = 128;
   readonly hiddenWidth = 256;
   readonly epochs = 200;
   readonly batchSize = 500;
   readonly optimizer = 'Adam (lr=2e-4, betas=(0.5, 0.999))';
-  readonly loss = 'Binary Cross-Entropy (non-saturating G loss)';
-  readonly dataset = 'MSK-IMPACT 50k — 80% train / 20% test';
+  readonly loss = 'Binary Cross Entropy (non saturating G loss)';
+  readonly dataset = 'MSK-IMPACT 50k, 80/20 train/test';
 
   readonly generatorLayers: ArchLayer[] = [
     { name: 'Input', detail: 'z ∈ ℝ^128 (Gaussian noise)' },
@@ -38,7 +55,7 @@ export class AppComponent {
     { name: 'Linear', detail: '256 → 256' },
     { name: 'LeakyReLU', detail: 'negative slope = 0.2' },
     { name: 'Linear', detail: '256 → n_features' },
-    { name: 'Output', detail: 'synthetic patient vector (z-score space)' },
+    { name: 'Output', detail: 'synthetic patient vector (standardised space)' },
   ];
 
   readonly discriminatorLayers: ArchLayer[] = [
@@ -51,36 +68,154 @@ export class AppComponent {
     { name: 'Sigmoid', detail: 'P(real)' },
   ];
 
-  readonly figures: MetricFigure[] = [
+  readonly vanillaPerMethodFigures: MetricFigure[] = [
     {
-      file: 'cindex_brier_comparison.png',
-      title: 'C-Index & Brier Score Comparison',
+      file: 'distributions.png',
+      title: 'Feature Distributions',
       description:
-        'Compares survival models trained on real vs. GAN-synthetic data using Concordance Index (higher = better risk ranking) and Brier Score (lower = better calibrated predictions). If the synthetic-trained model tracks close to the real-trained baseline, the GAN preserves the survival signal needed for downstream prediction.',
+        'Per feature histograms for real vs synthetic data. The bars should line up if the GAN learned that column.',
     },
     {
-      file: 'metric_heatmap.png',
-      title: 'Per-Feature Fidelity Heatmap',
+      file: 'km_curves.png',
+      title: 'Kaplan–Meier Curves',
       description:
-        'Heatmap of fidelity metrics (e.g. KS distance, Wasserstein, marginal-mean error) computed per column. Darker / lower-error cells indicate marginals the GAN reproduces faithfully; bright cells flag features where the synthetic distribution drifts from the real one — a signal of mode collapse or biased sampling on those columns.',
+        'Kaplan–Meier curves for real and synthetic patients. Tells us if survival over time looks the same.',
     },
     {
-      file: 'radar_summary.png',
-      title: 'Radar Summary of Quality Dimensions',
+      file: 'tsne_embedding.png',
+      title: 't-SNE Embedding',
       description:
-        'Single-glance radar that scores the GAN across statistical fidelity, downstream utility, privacy, and diversity axes. A balanced large polygon means the model is well-rounded; sharp inward dents on any axis expose the weakest dimension (commonly diversity for vanilla GANs prone to mode collapse).',
+        '2D t-SNE projection of real and synthetic samples. Good overlap means they sit in roughly the same regions.',
+    },
+  ];
+
+  readonly survivalGanDataset = 'Rotterdam 2232 survival';
+  readonly survivalGanIter = 3000;
+  readonly survivalGanBatchSize = 256;
+  readonly survivalGanLatentDim = 128;
+  readonly survivalGanGeneratorHiddenLayers = 2;
+  readonly survivalGanGeneratorHiddenUnits = 128;
+  readonly survivalGanGeneratorActivation = 'GELU';
+  readonly survivalGanGeneratorResidual = 'Enabled (concatenation skip)';
+  readonly survivalGanDiscriminatorHiddenLayers = 3;
+  readonly survivalGanDiscriminatorHiddenUnits = 256;
+  readonly survivalGanDiscriminatorActivation = 'LeakyReLU';
+  readonly survivalGanDiscriminatorDropout = 0.1;
+  readonly survivalGanOptimizer =
+    'Adam (G: lr=1e-3, wd=1e-4, betas=(0.5,0.999); D: lr=1e-3, wd=1e-5, betas=(0.5,0.999))';
+  readonly survivalGanLoss =
+    'Wasserstein GAN with gradient penalty (lambda=10) + identifiability penalty (lambda=0.1)';
+
+  readonly survivalGeneratorLayers: ArchLayer[] = [
+    { name: 'Input', detail: 'noise + conditional vector' },
+    { name: 'Residual MLP Block 1', detail: 'Linear → GELU (skip concat)' },
+    { name: 'Residual MLP Block 2', detail: 'Linear → GELU (skip concat)' },
+    { name: 'Linear', detail: 'project to encoded tabular feature space' },
+    {
+      name: 'Mixed Activation Head',
+      detail: 'softmax for discrete slices, identity for continuous slices',
     },
     {
-      file: 'subgroup_km_grid.png',
-      title: 'Subgroup Kaplan–Meier Curves',
+      name: 'Output',
+      detail: 'encoded synthetic survival row (later inverse transformed)',
+    },
+  ];
+
+  readonly survivalDiscriminatorLayers: ArchLayer[] = [
+    { name: 'Input', detail: 'encoded tabular row + conditional vector' },
+    { name: 'MLP Block 1', detail: 'Dropout(0.1) → Linear → LeakyReLU' },
+    { name: 'MLP Block 2', detail: 'Dropout(0.1) → Linear → LeakyReLU' },
+    { name: 'MLP Block 3', detail: 'Dropout(0.1) → Linear → LeakyReLU' },
+    { name: 'Linear', detail: 'project to critic score' },
+    { name: 'Output', detail: 'Wasserstein critic value (no sigmoid)' },
+  ];
+
+  readonly survivalFigures: MetricFigure[] = [
+    {
+      file: 'distributions.png',
+      title: 'Feature Distributions',
       description:
-        'Grid of Kaplan–Meier survival curves for clinically meaningful subgroups (e.g. cancer type, sex, MSI status), real vs. synthetic. Overlapping curves mean the GAN preserves subgroup-level survival dynamics; large gaps reveal that the synthetic cohort misrepresents how a subgroup actually progresses over time.',
+        'Per feature histograms for real vs synthetic data. The bars should line up if the GAN learned that column.',
     },
     {
-      file: 'subgroup_metric_heatmap.png',
-      title: 'Subgroup Metric Heatmap',
+      file: 'km_curves.png',
+      title: 'Kaplan–Meier Curves',
       description:
-        'Survival-metric error (e.g. C-index gap, log-rank p-value) broken down by subgroup. It exposes whether the GAN performs uniformly across the population or systematically fails on minority subgroups — a key fairness check before using synthetic data for downstream research.',
+        'Kaplan–Meier curves for real and synthetic patients. Tells us if survival over time looks the same.',
+    },
+    {
+      file: 'tsne_embedding.png',
+      title: 't-SNE Embedding',
+      description:
+        '2D t-SNE projection of real and synthetic samples. Good overlap means they sit in roughly the same regions.',
+    },
+  ];
+
+  readonly ctganDataset = 'MSK-IMPACT 50k, 80/20 train/test';
+  readonly ctganEpochs = 500;
+  readonly ctganBatchSize = 500;
+  readonly ctganLatentDim = 128;
+  readonly ctganGeneratorDim = '(256, 256)';
+  readonly ctganDiscriminatorDim = '(256, 256)';
+  readonly ctganDiscriminatorSteps = 1;
+  readonly ctganPac = 10;
+  readonly ctganOptimizer = 'Adam (lr=2e-4, betas=(0.5, 0.9), weight_decay=1e-6)';
+  readonly ctganLoss = 'Wasserstein GAN with gradient penalty (lambda=10)';
+
+  readonly ctganDiscreteColumns = [
+    'Cancer Type',
+    'Genetic Ancestry',
+    'Disease Status',
+    'FACETS QC',
+    'MSI Type',
+    'Sex',
+    'Whole Genome Doubling Status (FACETS)',
+    'Age at Diagnosis',
+    'Mutation Count',
+    'Sample coverage',
+    'Number of Other Cancer Types',
+    'status',
+  ];
+
+  readonly ctganGeneratorLayers: ArchLayer[] = [
+    { name: 'Input', detail: 'z ∈ ℝ^128 + conditional vector (mode specific)' },
+    { name: 'Residual Block 1', detail: 'Linear → BatchNorm → ReLU (skip concat)' },
+    { name: 'Residual Block 2', detail: 'Linear → BatchNorm → ReLU (skip concat)' },
+    { name: 'Linear', detail: 'project to encoded tabular feature space' },
+    {
+      name: 'Mixed Activation Output',
+      detail: 'tanh for continuous slices, Gumbel-softmax for discrete slices',
+    },
+  ];
+
+  readonly ctganDiscriminatorLayers: ArchLayer[] = [
+    { name: 'Input', detail: 'pac=10 rows concatenated + conditional vector' },
+    { name: 'Linear', detail: '(n_features × 10) → 256' },
+    { name: 'LeakyReLU + Dropout', detail: 'slope = 0.2, p = 0.5' },
+    { name: 'Linear', detail: '256 → 256' },
+    { name: 'LeakyReLU + Dropout', detail: 'slope = 0.2, p = 0.5' },
+    { name: 'Linear', detail: '256 → 1' },
+    { name: 'Output', detail: 'Wasserstein critic value (no sigmoid)' },
+  ];
+
+  readonly ctganFigures: MetricFigure[] = [
+    {
+      file: 'distributions.png',
+      title: 'Feature Distributions',
+      description:
+        'Per feature histograms for real vs synthetic data. The bars should line up if CTGAN learned that column.',
+    },
+    {
+      file: 'km_curves.png',
+      title: 'Kaplan–Meier Curves',
+      description:
+        'Kaplan–Meier curves for real and synthetic patients. Tells us if survival over time looks the same.',
+    },
+    {
+      file: 'tsne_embedding.png',
+      title: 't-SNE Embedding',
+      description:
+        '2D t-SNE projection of real and synthetic samples. Good overlap means they sit in roughly the same regions.',
     },
   ];
 
@@ -89,6 +224,10 @@ export class AppComponent {
   generateError: string | null = null;
 
   constructor(private vanillaGan: VanillaGanService) {}
+
+  setPage(page: ViewPage): void {
+    this.selectedPage = page;
+  }
 
   generatePatient(): void {
     this.generating = true;

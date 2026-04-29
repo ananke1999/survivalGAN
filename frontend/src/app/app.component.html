@@ -1,20 +1,102 @@
-<div class="page">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark">SG</span>
+      <div class="brand-text">
+        <span class="brand-name">SurvivalGAN</span>
+        <span class="brand-sub">Synthetic survival data</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Models</div>
+      <nav class="sidebar-nav">
+        <button
+          *ngFor="let page of pages"
+          type="button"
+          class="sidebar-link"
+          [class.active]="selectedPage === page.key"
+          (click)="setPage(page.key)"
+        >
+          <span class="sidebar-link-label">{{ page.label }}</span>
+        </button>
+      </nav>
+    </div>
+
+  </aside>
+
+  <main class="page">
+  <ng-container *ngIf="selectedPage === 'introduction'">
+    <header class="hero">
+      <h1>Introduction</h1>
+    </header>
+
+    <section class="section">
+      <h2>What is SurvivalGAN?</h2>
+      <p class="lede">
+        SurvivalGAN is a generative model that produces synthetic survival
+        datasets while preserving the joint distribution of covariates,
+        survival times, and censoring indicators. The point is to let
+        researchers share realistic data without crossing the privacy line.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Why a vanilla GAN isn't enough</h2>
+      <p class="lede">
+        A plain GAN treats the data as a generic table. It has no notion of
+        survival time, censoring, or how covariates drive outcomes. The
+        synthetic data ends up with optimistic survival times, censoring
+        flags that don't match the times, and broken covariate to outcome
+        dependencies. That's why a survival aware design is needed.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The MSK-50K dataset</h2>
+      <p class="lede">
+        Raw MSK-IMPACT cohort: 54,331 samples from 48,179 patients across 64
+        cancer types. After cleaning we keep 17 covariates from the 45 raw
+        columns: ten continuous variables (Age, MSI Score, etc.) and seven
+        categorical variables (Sex, Disease Status, etc.).
+      </p>
+
+      <figure class="figure-card">
+        <img
+          src="assets/msk50k_pipeline.png"
+          alt="MSK-50K data preparation pipeline from raw cohort to train/test split"
+          loading="lazy"
+        />
+        <figcaption>
+          Data preparation pipeline. Starts from the raw 54,331 sample cohort,
+          drops missing and duplicate rows, narrows to 19 modeling columns,
+          handles cleaning and encoding, then splits 80/20 into train (34,938)
+          and test (8,735) with the 38.6% event rate preserved on both sides.
+        </figcaption>
+      </figure>
+    </section>
+
+    <footer class="footer">
+      <span>SurvivalGAN · Introduction</span>
+    </footer>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === 'vanilla'">
   <header class="hero">
-    <h1>SurvivalGAN — Vanilla GAN Baseline</h1>
+    <h1>Vanilla GAN Baseline</h1>
     <p class="subtitle">
-      MLP Generator/Discriminator trained on the {{ dataset }} cohort to
-      synthesize survival-analysis-ready patient records.
+      MLP generator and discriminator. Trained on the {{ dataset }} split to
+      generate synthetic patient rows.
     </p>
   </header>
 
   <section class="section">
     <h2>Model Architecture</h2>
     <p class="lede">
-      The baseline is a plain GAN: the Generator maps Gaussian noise to a
-      patient feature vector in z-score space, and the Discriminator scores how
-      "real" each vector looks. After training, the Generator is sampled and
-      its outputs are inverse-transformed back to the original feature scale
-      with discrete columns clamped to valid bounds.
+      Plain GAN. The generator turns Gaussian noise into a patient feature
+      vector in standardised space. The discriminator scores how real that
+      vector looks. At sample time we run the generator, reverse the
+      standardisation, and clamp discrete columns back to valid values.
     </p>
 
     <div class="hyper-grid">
@@ -70,11 +152,9 @@
   <section class="section">
     <h2>Generator GAN Model</h2>
     <p class="lede">
-      The trained generator lives in <code>gan_checkpoint/</code>. Click
-      <em>Generate Synthetic Patient</em> to draw a fresh
-      <code>z ~ N(0, I)</code> of dimension {{ latentDim }}, push it through
-      the generator on the backend, inverse-scale the output and clamp the
-      discrete columns — exactly the pipeline used in <code>test_gan.py</code>.
+      Click <em>Generate Synthetic Patient</em> to draw a fresh
+      <code>z ~ N(0, I)</code> of dimension {{ latentDim }} which queries the
+      generator on the backend.
     </p>
 
     <div class="generator-controls">
@@ -99,7 +179,7 @@
           <code>[{{ formatLatent(generated.latent_preview) }}]</code>
         </div>
         <div class="preview-card">
-          <h4>Raw G(z) (z-score space, first 8)</h4>
+          <h4>Raw G(z) (standardised space, first 8)</h4>
           <code>[{{ formatLatent(generated.raw_preview) }}]</code>
         </div>
       </div>
@@ -124,18 +204,17 @@
   <section class="section">
     <h2>Evaluation Results</h2>
     <p class="lede">
-      Each figure below is produced by the evaluation pipeline in
-      <code>eval_results_gan/report/figures</code>. Together they assess the
-      GAN along three axes: statistical fidelity to the real distribution,
-      downstream utility for survival models, and consistency across patient
-      subgroups.
+      Metrics visualizations for the Vanilla GAN are rendered below.
     </p>
 
     <div class="figure-list">
-      <article class="figure-card" *ngFor="let figure of figures">
+      <article
+        class="figure-card"
+        *ngFor="let figure of vanillaPerMethodFigures"
+      >
         <h3>{{ figure.title }}</h3>
         <img
-          [src]="'assets/figures/' + figure.file"
+          [src]="'assets/figures-vanilla-pm/' + figure.file"
           [alt]="figure.title"
           loading="lazy"
         />
@@ -145,6 +224,371 @@
   </section>
 
   <footer class="footer">
-    <span>SurvivalGAN · Vanilla baseline · GAN checkpoint in <code>gan_checkpoint/</code></span>
+    <span>SurvivalGAN · Vanilla GAN baseline</span>
   </footer>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === 'ctgan'">
+    <header class="hero">
+      <h1>CTGAN Baseline</h1>
+      <p class="subtitle">
+        Conditional Tabular GAN (Xu et al., 2019). Trained on the
+        {{ ctganDataset }} split to generate synthetic patient rows.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2>Model Architecture</h2>
+      <p class="lede">
+        CTGAN normalises continuous columns by mode and uses a conditional
+        vector built by sampling rows during training for the discrete ones.
+        The generator outputs rows with both column types. The discriminator
+        uses PacGAN, grouping {{ ctganPac }} rows at a time, and trains with
+        Wasserstein loss plus gradient penalty.
+      </p>
+
+      <div class="hyper-grid">
+        <div class="hyper">
+          <span class="hyper-label">Latent dimension</span>
+          <span class="hyper-value">{{ ctganLatentDim }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Epochs</span>
+          <span class="hyper-value">{{ ctganEpochs }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Batch size</span>
+          <span class="hyper-value">{{ ctganBatchSize }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Generator dims</span>
+          <span class="hyper-value">{{ ctganGeneratorDim }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Discriminator dims</span>
+          <span class="hyper-value">{{ ctganDiscriminatorDim }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">PAC group size</span>
+          <span class="hyper-value">{{ ctganPac }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Discriminator steps</span>
+          <span class="hyper-value">{{ ctganDiscriminatorSteps }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Optimizer</span>
+          <span class="hyper-value">{{ ctganOptimizer }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Loss</span>
+          <span class="hyper-value">{{ ctganLoss }}</span>
+        </div>
+      </div>
+
+      <div class="arch-grid">
+        <article class="arch-card">
+          <h3>Generator</h3>
+          <ol class="arch-stack">
+            <li *ngFor="let layer of ctganGeneratorLayers" class="arch-layer">
+              <span class="layer-name">{{ layer.name }}</span>
+              <span class="layer-detail">{{ layer.detail }}</span>
+            </li>
+          </ol>
+        </article>
+
+        <article class="arch-card">
+          <h3>Discriminator (PacGAN)</h3>
+          <ol class="arch-stack">
+            <li
+              *ngFor="let layer of ctganDiscriminatorLayers"
+              class="arch-layer"
+            >
+              <span class="layer-name">{{ layer.name }}</span>
+              <span class="layer-detail">{{ layer.detail }}</span>
+            </li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Discrete Columns</h2>
+      <p class="lede">
+        These columns are treated as categorical. Sampling rows during
+        training keeps their modes balanced.
+      </p>
+      <div class="hyper-grid">
+        <div class="hyper" *ngFor="let column of ctganDiscreteColumns">
+          <span class="hyper-value">{{ column }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Evaluation Results</h2>
+      <p class="lede">
+        Metrics visualizations for CTGAN are rendered below.
+      </p>
+
+      <div class="figure-list">
+        <article class="figure-card" *ngFor="let figure of ctganFigures">
+          <h3>{{ figure.title }}</h3>
+          <img
+            [src]="'assets/figures-ctgan/' + figure.file"
+            [alt]="figure.title"
+            loading="lazy"
+          />
+          <p>{{ figure.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>SurvivalGAN · CTGAN baseline</span>
+    </footer>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === 'survival'">
+    <header class="hero">
+      <h1>Conditional Survival GAN</h1>
+      <p class="subtitle">
+        Survival aware tabular GAN trained on {{ survivalGanDataset }}. Adds
+        conditional generation and a separate time to event model on top of
+        the usual GAN setup.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2>Model Architecture</h2>
+      <p class="lede">
+        Architecture lives in <code>survGAN.py</code>. Conditional tabular GAN
+        with an MLP generator and discriminator. Wasserstein loss with gradient
+        penalty, plus a survival-focused training pipeline.
+      </p>
+
+      <div class="hyper-grid">
+        <div class="hyper">
+          <span class="hyper-label">Latent dimension</span>
+          <span class="hyper-value">{{ survivalGanLatentDim }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Training iterations</span>
+          <span class="hyper-value">{{ survivalGanIter }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Batch size</span>
+          <span class="hyper-value">{{ survivalGanBatchSize }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Generator</span>
+          <span class="hyper-value">
+            {{ survivalGanGeneratorHiddenLayers }} layers ×
+            {{ survivalGanGeneratorHiddenUnits }} units
+          </span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Generator activation</span>
+          <span class="hyper-value">{{ survivalGanGeneratorActivation }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Generator residual</span>
+          <span class="hyper-value">{{ survivalGanGeneratorResidual }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Discriminator</span>
+          <span class="hyper-value">
+            {{ survivalGanDiscriminatorHiddenLayers }} layers ×
+            {{ survivalGanDiscriminatorHiddenUnits }} units
+          </span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Discriminator activation</span>
+          <span class="hyper-value">{{ survivalGanDiscriminatorActivation }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Discriminator dropout</span>
+          <span class="hyper-value">{{ survivalGanDiscriminatorDropout }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Optimizer</span>
+          <span class="hyper-value">{{ survivalGanOptimizer }}</span>
+        </div>
+        <div class="hyper">
+          <span class="hyper-label">Loss</span>
+          <span class="hyper-value">{{ survivalGanLoss }}</span>
+        </div>
+      </div>
+
+      <div class="arch-grid">
+        <article class="arch-card">
+          <h3>Generator</h3>
+          <ol class="arch-stack">
+            <li *ngFor="let layer of survivalGeneratorLayers" class="arch-layer">
+              <span class="layer-name">{{ layer.name }}</span>
+              <span class="layer-detail">{{ layer.detail }}</span>
+            </li>
+          </ol>
+        </article>
+
+        <article class="arch-card">
+          <h3>Discriminator</h3>
+          <ol class="arch-stack">
+            <li
+              *ngFor="let layer of survivalDiscriminatorLayers"
+              class="arch-layer"
+            >
+              <span class="layer-name">{{ layer.name }}</span>
+              <span class="layer-detail">{{ layer.detail }}</span>
+            </li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Evaluation Results</h2>
+      <p class="lede">
+        Metrics visualizations for Survival GAN are rendered below.
+      </p>
+
+      <div class="figure-list">
+        <article class="figure-card" *ngFor="let figure of survivalFigures">
+          <h3>{{ figure.title }}</h3>
+          <img
+            [src]="'assets/figures-survival/' + figure.file"
+            [alt]="figure.title"
+            loading="lazy"
+          />
+          <p>{{ figure.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>SurvivalGAN · Survival GAN</span>
+    </footer>
+  </ng-container>
+
+  <ng-container *ngIf="selectedPage === 'conclusion'">
+    <header class="hero">
+      <h1>Conclusion</h1>
+      <p class="subtitle">
+        Side by side metric comparison across all three models on the same
+        evaluation suite.
+      </p>
+      <ul class="hero-points">
+        <li>
+          <strong>(a)</strong> Covariate similarity. How close the synthetic
+          features are to the real ones. Lower is better.
+        </li>
+        <li>
+          <strong>(b)</strong> Survival distribution similarity. How close the
+          synthetic survival times are to the real ones. Lower is better.
+        </li>
+        <li>
+          <strong>(c)</strong> Downstream survival utility, measured by
+          Harrell's C on the real test set. Higher is better.
+        </li>
+      </ul>
+    </header>
+
+    <section class="section">
+      <h2>Model Metric Comparison</h2>
+
+      <div class="metric-table-wrap">
+        <table class="metric-table">
+          <thead>
+            <tr>
+              <th rowspan="2" class="metric-col">Metric</th>
+              <th colspan="2">SurvivalGAN</th>
+              <th colspan="2">CTGAN</th>
+              <th colspan="2">GAN</th>
+            </tr>
+            <tr>
+              <th>train</th><th>test</th>
+              <th>train</th><th>test</th>
+              <th>train</th><th>test</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="group-row">
+              <td colspan="7">(a) Covariate similarity</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Jensen–Shannon (marg. mean)</td>
+              <td>0.006</td><td>0.006</td>
+              <td>0.012</td><td>0.012</td>
+              <td>0.011</td><td>0.012</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Wasserstein dist. (joint)</td>
+              <td>0.096</td><td>0.096</td>
+              <td>0.165</td><td>0.163</td>
+              <td>0.170</td><td>0.167</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Detection AUC (MLP)</td>
+              <td>0.520</td><td>0.496</td>
+              <td>0.603</td><td>0.501</td>
+              <td>0.517</td><td>0.519</td>
+            </tr>
+
+            <tr class="group-row">
+              <td colspan="7">(b) Survival distribution similarity</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Optimism</td>
+              <td>−0.036</td><td>−0.036</td>
+              <td>+0.027</td><td>+0.027</td>
+              <td>+0.028</td><td>+0.024</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Kaplan–Meier divergence</td>
+              <td>0.046</td><td>0.042</td>
+              <td>0.089</td><td>0.091</td>
+              <td>0.044</td><td>0.039</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Short-sightedness</td>
+              <td>0.000</td><td>0.000</td>
+              <td>0.067</td><td>0.058</td>
+              <td>0.000</td><td>0.000</td>
+            </tr>
+
+            <tr class="group-row">
+              <td colspan="7">
+                (c) Downstream survival utility (Harrell's C on real test)
+              </td>
+            </tr>
+            <tr class="sub-header-row">
+              <td class="metric-col"></td>
+              <td>TRTR</td><td>TSTR</td>
+              <td>TRTR</td><td>TSTR</td>
+              <td>TRTR</td><td>TSTR</td>
+            </tr>
+            <tr>
+              <td class="metric-col">XGBoost (AFT)</td>
+              <td>0.605</td><td>0.628</td>
+              <td>0.605</td><td>0.539</td>
+              <td>0.605</td><td>0.487</td>
+            </tr>
+            <tr>
+              <td class="metric-col">
+                Feature-importance Spearman (ρ, XGB)
+              </td>
+              <td colspan="2">0.733</td>
+              <td colspan="2">0.027</td>
+              <td colspan="2">−0.206</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>SurvivalGAN · Conclusion</span>
+    </footer>
+  </ng-container>
+  </main>
 </div>

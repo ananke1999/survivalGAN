@@ -1,21 +1,201 @@
 :host {
   display: block;
-  background: #0b1020;
+  background: #000000;
   color: #e6edf7;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, sans-serif;
 }
 
+.app-shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  width: 300px;
+  flex-shrink: 0;
+  height: 100vh;
+  background: #0f1115;
+  border-right: 1px solid #232733;
+  box-shadow: inset -1px 0 0 #1a1d24, 4px 0 16px rgba(0, 0, 0, 0.45);
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  box-sizing: border-box;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 18px;
+  border-bottom: 1px solid #1f2330;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0b1020;
+  background: linear-gradient(135deg, #6aa9ff 0%, #4f7dd6 100%);
+  box-shadow: 0 6px 16px rgba(106, 169, 255, 0.28);
+  letter-spacing: 0.02em;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e6edf7;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.brand-sub {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6f7d97;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+.sidebar-section-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #5d6a83;
+  padding: 0 12px 8px;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #aab6cf;
+  border-radius: 8px;
+  padding: 11px 14px 11px 16px;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: #181c25;
+  color: #e6edf7;
+}
+
+.sidebar-link:hover::before {
+  background: #2a3145;
+}
+
+.sidebar-link.active {
+  background: #1c2230;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sidebar-link.active::before {
+  background: linear-gradient(180deg, #6aa9ff 0%, #4f7dd6 100%);
+}
+
+
 .page {
+  flex: 1;
+  min-width: 0;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px 64px;
+  padding: 48px 32px 64px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 14px;
+    border-right: none;
+    border-bottom: 1px solid #232733;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  .sidebar-brand {
+    border-bottom: none;
+    padding: 0;
+  }
+
+  .sidebar-section-label {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sidebar-link {
+    padding: 8px 12px 8px 14px;
+  }
+
+  .page {
+    padding: 24px 16px 48px;
+  }
 }
 
 .hero {
   margin-bottom: 48px;
-  border-bottom: 1px solid #1f2a44;
+  border-bottom: 1px solid #262626;
   padding-bottom: 24px;
 }
 
@@ -29,6 +209,29 @@
   color: #9bb0d2;
   font-size: 1.05rem;
   margin: 0;
+}
+
+.hero-points {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  color: #c5d2ea;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-points li {
+  padding-left: 14px;
+  border-left: 2px solid #262626;
+}
+
+.hero-points li strong {
+  color: #6aa9ff;
+  margin-right: 6px;
+  font-weight: 600;
 }
 
 .section {
@@ -50,7 +253,7 @@
 
 .lede code,
 .footer code {
-  background: #18223d;
+  background: #1f1f1f;
   padding: 1px 6px;
   border-radius: 4px;
   font-size: 0.92em;
@@ -64,8 +267,8 @@
 }
 
 .hyper {
-  background: #131b33;
-  border: 1px solid #1f2a44;
+  background: #141414;
+  border: 1px solid #262626;
   border-radius: 8px;
   padding: 12px 14px;
   display: flex;
@@ -92,8 +295,8 @@
 }
 
 .arch-card {
-  background: #131b33;
-  border: 1px solid #1f2a44;
+  background: #141414;
+  border: 1px solid #262626;
   border-radius: 12px;
   padding: 20px 22px;
 }
@@ -116,8 +319,8 @@
 }
 
 .arch-layer {
-  background: #0e1730;
-  border: 1px solid #243254;
+  background: #0d0d0d;
+  border: 1px solid #2e2e2e;
   border-radius: 8px;
   padding: 10px 14px;
   display: flex;
@@ -144,8 +347,8 @@
 }
 
 .figure-card {
-  background: #131b33;
-  border: 1px solid #1f2a44;
+  background: #141414;
+  border: 1px solid #262626;
   border-radius: 12px;
   padding: 22px 24px;
 }
@@ -162,11 +365,12 @@
   height: auto;
   background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #243254;
+  border: 1px solid #2e2e2e;
   margin-bottom: 14px;
 }
 
-.figure-card p {
+.figure-card p,
+.figure-card figcaption {
   margin: 0;
   color: #c5d2ea;
   line-height: 1.55;
@@ -212,8 +416,8 @@
 }
 
 .generated-result {
-  background: #131b33;
-  border: 1px solid #1f2a44;
+  background: #141414;
+  border: 1px solid #262626;
   border-radius: 12px;
   padding: 22px 24px;
 }
@@ -226,8 +430,8 @@
 }
 
 .preview-card {
-  background: #0e1730;
-  border: 1px solid #243254;
+  background: #0d0d0d;
+  border: 1px solid #2e2e2e;
   border-radius: 8px;
   padding: 12px 14px;
 }
@@ -260,7 +464,7 @@
 .patient-table td {
   text-align: left;
   padding: 9px 12px;
-  border-bottom: 1px solid #243254;
+  border-bottom: 1px solid #2e2e2e;
 }
 
 .patient-table thead th {
@@ -268,11 +472,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #7e93ba;
-  border-bottom: 1px solid #1f2a44;
+  border-bottom: 1px solid #262626;
 }
 
 .patient-table tbody tr:hover {
-  background: #0e1730;
+  background: #0d0d0d;
 }
 
 .patient-table td:last-child {
@@ -284,6 +488,102 @@
   text-align: center;
   color: #7e93ba;
   font-size: 0.88rem;
-  border-top: 1px solid #1f2a44;
+  border-top: 1px solid #262626;
   padding-top: 18px;
+}
+
+.metric-table-wrap {
+  background: #141414;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  padding: 8px;
+  overflow-x: auto;
+}
+
+.metric-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  color: #e6edf7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.metric-table thead th {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7e93ba;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #262626;
+  background: #0d0d0d;
+}
+
+.metric-table thead tr:first-child th {
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.metric-table thead th:first-child {
+  text-align: left;
+}
+
+.metric-table thead th:not(:first-child) {
+  border-left: 1px solid #1f1f1f;
+}
+
+.metric-table tbody td {
+  padding: 9px 12px;
+  text-align: center;
+  border-bottom: 1px solid #1f1f1f;
+  border-left: 1px solid #1f1f1f;
+}
+
+.metric-table tbody td:first-child {
+  border-left: none;
+}
+
+.metric-table tbody tr:hover td {
+  background: #181818;
+}
+
+.metric-table .metric-col {
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #c5d2ea;
+  white-space: nowrap;
+}
+
+.metric-table thead th.metric-col {
+  text-align: left;
+}
+
+.metric-table .group-row td {
+  background: #1a1f2c;
+  color: #6aa9ff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: left;
+  padding: 10px 14px;
+  border-left: none;
+  border-top: 1px solid #262626;
+}
+
+.metric-table .sub-header-row td {
+  background: #0d0d0d;
+  color: #7e93ba;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.metric-table .sub-header-row td:first-child {
+  border-left: none;
 }

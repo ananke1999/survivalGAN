@@ -23,8 +23,18 @@
               "src/assets",
               {
                 "glob": "**/*.png",
-                "input": "../eval_results_gan/report/figures",
-                "output": "/assets/figures"
+                "input": "../eval_results_gan/per_method/synthetic_vanilla_gan",
+                "output": "/assets/figures-vanilla-pm"
+              },
+              {
+                "glob": "**/*.png",
+                "input": "../eval_results_baseline/per_method/synthetic",
+                "output": "/assets/figures-survival"
+              },
+              {
+                "glob": "**/*.png",
+                "input": "../eval_results_ctgan/per_method/synthetic_ctgan",
+                "output": "/assets/figures-ctgan"
               }
             ],
             "styles": [
